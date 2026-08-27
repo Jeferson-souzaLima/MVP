@@ -1,0 +1,27 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35818.85 d17.13
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "petcare-api-v1", "petcare-api-v1.esproj", "{6A6E5756-BDD8-A3AD-84E2-7B5157BE03F6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6A6E5756-BDD8-A3AD-84E2-7B5157BE03F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A6E5756-BDD8-A3AD-84E2-7B5157BE03F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A6E5756-BDD8-A3AD-84E2-7B5157BE03F6}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{6A6E5756-BDD8-A3AD-84E2-7B5157BE03F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A6E5756-BDD8-A3AD-84E2-7B5157BE03F6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6A6E5756-BDD8-A3AD-84E2-7B5157BE03F6}.Release|Any CPU.Deploy.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {00497B8B-6E1E-484A-83F4-1BAD3211087E}
+	EndGlobalSection
+EndGlobal

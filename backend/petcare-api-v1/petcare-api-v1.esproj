@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.VisualStudio.JavaScript.Sdk/1.0.2191419">
+  <ItemGroup>
+    <Folder Include="Config\" />
+    <Folder Include="uploads\lojas\" />
+    <Folder Include="uploads\produtos\" />
+  </ItemGroup>
+</Project>

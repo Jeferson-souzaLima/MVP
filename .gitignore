@@ -1,0 +1,31 @@
+# Dependencies and build artifacts
+**/node_modules/
+**/dist/
+**/build/
+**/obj/
+
+# Environment files and secrets
+**/.env
+**/.env.*
+!**/.env.example
+
+# Runtime uploads
+backend/petcare-api-v1/uploads/
+
+# IDE and operating system files
+.vs/
+**/.vs/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Unrelated local backup
+database/*.bcd
+
+# Legacy database dumps may contain personal or test data. Version only migrations.
+/database/*.sql
