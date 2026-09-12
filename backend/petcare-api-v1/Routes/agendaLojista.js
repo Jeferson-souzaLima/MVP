@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const AgendaLojistaController = require('../controllers/agendaLojistaController');
-const authMiddleware = require('../middlewares/authMiddleware');
+const agendaLojistaController = require('../Controllers/agendaLojistaController');
+const authMiddleware = require('../Middlewares/authMiddleware');
 
 // Middleware de autentica��o
 router.use(authMiddleware);
@@ -9,33 +9,33 @@ router.use(authMiddleware);
 // ========================
 // Configura��o da Agenda
 // ========================
-router.get('/config', AgendaLojistaController.getConfig);
-router.post('/config', AgendaLojistaController.createOrUpdateConfig);
+router.get('/config', agendaLojistaController.getConfig);
+router.post('/config', agendaLojistaController.createOrUpdateConfig);
 
 // ========================
 // Disponibilidade
 // ========================
-router.get('/disponibilidade', AgendaLojistaController.getDisponibilidade);
-router.post('/disponibilidade', AgendaLojistaController.createDisponibilidade);
+router.get('/disponibilidade', agendaLojistaController.getDisponibilidade);
+router.post('/disponibilidade', agendaLojistaController.createDisponibilidade);
 
 // ?? A rota espec�fica deve vir antes da rota din�mica
 router.delete(
     '/disponibilidade/loja',
-    AgendaLojistaController.deleteDisponibilidadeByLoja
+    agendaLojistaController.deleteDisponibilidadeByLoja
 );
 
 router.delete(
     '/disponibilidade/:id',
-    AgendaLojistaController.deleteDisponibilidade
+    agendaLojistaController.deleteDisponibilidade
 );
 
-router.get('/horarios', AgendaLojistaController.getHorariosDisponiveis);
+router.get('/horarios', agendaLojistaController.getHorariosDisponiveis);
 
 // ========================
 // Bloqueios
 // ========================
-router.get('/bloqueios', AgendaLojistaController.getBloqueios);
-router.post('/bloqueios', AgendaLojistaController.createBloqueio);
-router.delete('/bloqueios/:id', AgendaLojistaController.deleteBloqueio);
+router.get('/bloqueios', agendaLojistaController.getBloqueios);
+router.post('/bloqueios', agendaLojistaController.createBloqueio);
+router.delete('/bloqueios/:id', agendaLojistaController.deleteBloqueio);
 
 module.exports = router;

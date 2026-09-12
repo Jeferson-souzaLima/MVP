@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
 
-const authController = require('../controllers/authController');
-const usuariosController = require('../controllers/usuariosController');
-const authMiddleware = require('../middlewares/authMiddleware');
+const authController = require('../Controllers/authController');
+const usuariosController = require('../Controllers/usuariosController');
+const authMiddleware = require('../Middlewares/authMiddleware');
 
 router.get('/me', authMiddleware, authController.me);
 

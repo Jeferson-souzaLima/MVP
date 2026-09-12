@@ -1,5 +1,5 @@
 // controllers/lojasController.js
-const lojaModel = require('../models/lojasModel');
+const lojaModel = require('../Models/lojasModel');
 const db = require('../db');
 
 // Listar todas as lojas

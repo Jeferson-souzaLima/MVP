@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const agendamentosController = require('../controllers/agendamentosController');
-const authMiddleware = require('../middlewares/authMiddleware');
+const agendamentosController = require('../Controllers/agendamentosController');
+const agendaLojistaController = require('../Controllers/agendaLojistaController');
+const authMiddleware = require('../Middlewares/authMiddleware');
 
 router.use(authMiddleware);
 
@@ -17,6 +18,10 @@ router.get('/lojista', agendamentosController.getAgendamentosDoLojista);
 router.get('/meus-agendamentos', agendamentosController.getMeusAgendamentos);
 router.get('/pedido/:pedido_id', agendamentosController.getAgendamentosPorPedido);
 router.get('/meus', authMiddleware, agendamentosController.getMeusAgendamentos);
+router.get(
+    '/lojista/datas-confirmadas',
+    agendaLojistaController.getDatasComAgendamentosConfirmados
+);
 
 // Detalhe
 router.get('/:id', agendamentosController.getAgendamentoPorId);

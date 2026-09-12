@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const petsController = require('../controllers/petsController');
-const authMiddleware = require('../middlewares/authMiddleware');
-const upload = require('../uploads/uploadMiddleware');
+const petsController = require('../Controllers/petsController');
+const authMiddleware = require('../Middlewares/authMiddleware');
+const upload = require('../Middlewares/uploadMiddleware');
 
 // Todas as rotas de pets precisam do usuário logado
 router.use(authMiddleware);

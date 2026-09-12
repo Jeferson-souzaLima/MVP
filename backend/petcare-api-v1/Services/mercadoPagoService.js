@@ -5,7 +5,7 @@ const {
 } = require('mercadopago');
 const {
     buildWebhookNotificationUrl
-} = require('../utils/mercadoPagoNotificationUrl');
+} = require('../Utils/mercadoPagoNotificationUrl');
 
 const client = new MercadoPagoConfig({
     accessToken: process.env.MP_ACCESS_TOKEN

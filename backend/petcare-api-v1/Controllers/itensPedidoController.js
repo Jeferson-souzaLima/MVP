@@ -1,5 +1,5 @@
-const itensPedidoModel = require('../models/itensPedidoModel');
-const pedidosModel = require('../models/pedidosModel');
+const itensPedidoModel = require('../Models/itensPedidoModel');
+const pedidosModel = require('../Models/pedidosModel');
 
 // Fun��o auxiliar de permiss�o
 function verificarPermissaoPedido(pedido, usuario) {

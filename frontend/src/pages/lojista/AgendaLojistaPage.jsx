@@ -11,7 +11,50 @@ export default function AgendaLojistaPage() {
   const [modoCriacao, setModoCriacao] = useState(false);
   const [servicos, setServicos] = useState([]);  
   const [confirmarDelete, setConfirmarDelete] = useState(null);
+  const [datasComAgendamentos, setDatasComAgendamentos] = useState([]);
   const navigate = useNavigate();
+
+  const buscarDatasComAgendamentos = async () => {
+    try {
+      const hoje = new Date();
+
+      const dataInicial = hoje.toISOString().split("T")[0];
+
+      const dataFinal = new Date(
+        hoje.getFullYear(),
+        hoje.getMonth() + 1,
+        0
+      )
+        .toISOString()
+        .split("T")[0];
+
+      const response = await fetch(
+        `http://localhost:3000/agendamentos/lojista/datas-confirmadas?data_inicial=${dataInicial}&data_final=${dataFinal}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`
+          }
+        }
+      );
+
+      const dados = await response.json();
+
+      if (!response.ok) {
+        console.error(dados.message);
+        return;
+      }
+
+      setDatasComAgendamentos(
+        dados.map((item) => item.data)
+      );
+
+    } catch (error) {
+      console.error(
+        "Erro ao buscar datas com agendamentos confirmados:",
+        error
+      );
+    }
+  };
 
   const [formData, setFormData] = useState({
     servico_id: "",
@@ -263,6 +306,10 @@ export default function AgendaLojistaPage() {
     }
   };
 
+  useEffect(() => {
+    buscarDatasComAgendamentos();
+  }, []);
+
   return (
     <div className="max-w-5xl mx-auto space-y-6 pb-12">
       
@@ -271,30 +318,30 @@ export default function AgendaLojistaPage() {
         <button
           type="button"
           onClick={() => navigate("/perfil-lojista")}
-          className="mb-5 flex items-center gap-2 text-sm font-semibold text-green-900 hover:underline"
+          className="mb-6 flex items-center gap-2 text-sm font-semibold text-green-900 hover:underline"
         >
           <FaArrowLeft />
           Voltar ao painel
         </button>
 
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-green-900">
-              Minha Agenda
-            </h1>
+        <div>
+          <h1 className="text-3xl font-bold text-green-900">
+            Minha Agenda
+          </h1>
 
-            <p className="mt-2 text-green-800">
-              Organize seus agendamentos.
-            </p>
-          </div>
-
-          <button
-            onClick={() => navigate("/lojista/agenda/configuracoes")}
-            className="bg-white px-3 py-2 rounded-xl shadow hover:bg-gray-100 transition"
-          >
-            ⚙️
-          </button>
+          <p className="mt-2 text-green-800">
+            Organize seus atendimentos e acompanhe os agendamentos da sua loja.
+          </p>
         </div>
+
+        <button
+          type="button"
+          onClick={() => navigate("/lojista/agenda/configuracoes")}
+          className="mt-6 inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 font-semibold text-green-900 shadow-sm transition hover:bg-green-50"
+        >
+          <span>⚙️</span>
+          Configurações da agenda
+        </button>
       </header>
 
       {/* BOTÃO NOVO AGENDAMENTO */}
@@ -336,19 +383,18 @@ export default function AgendaLojistaPage() {
           }
           className="shadow-xl rounded-2xl"
           tileContent={({ date, view }) => {
-            if (view === "month") {
-              const possuiAgendamento = agendamentos.some(
-                (ag) =>
-                  new Date(ag.data_inicio).toDateString() ===
-                  date.toDateString()
-              );
+            if (view !== "month") return null;
 
-              return possuiAgendamento ? (
-                <div className="flex justify-center mt-1">
-                  <div className="w-2 h-2 bg-green-600 rounded-full"></div>
-                </div>
-              ) : null;
-            }
+            const dataCalendario = date.toISOString().split("T")[0];
+
+            const possuiAgendamentoConfirmado =
+              datasComAgendamentos.includes(dataCalendario);
+
+            return possuiAgendamentoConfirmado ? (
+              <div className="flex justify-center mt-1">
+                <span className="w-2 h-2 rounded-full bg-green-600" />
+              </div>
+            ) : null;
           }}
         />
       </div>      
@@ -528,36 +574,6 @@ export default function AgendaLojistaPage() {
                 )}
 
                 <div className="mt-5">
-
-                  {/*{agendamentoSelecionado.status === "aguardando_pagamento" && (
-                    <div className="grid grid-cols-2 gap-2">
-
-                      <button
-                        onClick={() =>
-                          alterarStatus(
-                            agendamentoSelecionado.id,
-                            "confirmado"
-                          )
-                        }
-                        className="bg-blue-600 text-white py-2 rounded-xl hover:bg-blue-700"
-                      >
-                        ✔ Confirmar
-                      </button>
-
-                      <button
-                        onClick={() =>
-                          alterarStatus(
-                            agendamentoSelecionado.id,
-                            "cancelado_lojista"
-                          )
-                        }
-                        className="bg-red-600 text-white py-2 rounded-xl hover:bg-red-700"
-                      >
-                        ✖ Cancelar
-                      </button>
-
-                    </div>
-                  )}*/}
 
                   {agendamentoSelecionado.status === "confirmado" && (
 

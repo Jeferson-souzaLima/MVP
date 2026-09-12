@@ -1,15 +1,15 @@
-ï»¿const historicoModel = require('../models/historicoUsuarioModel');
+const historicoModel = require('../Models/historicoUsuarioModel');
 
 exports.getHistoricoUsuario = (req, res) => {
     const usuario = req.usuario;
 
     if (!usuario) {
-        return res.status(401).json({ mensagem: 'UsuÃ¡rio nÃ£o autenticado.' });
+        return res.status(401).json({ mensagem: 'Usuário não autenticado.' });
     }
 
     const usuario_id = usuario.id;
 
-    // ğŸ”¹ Buscar produtos
+    // ?? Buscar produtos
     historicoModel.getProdutosPorUsuario(usuario_id, (err, produtos) => {
         if (err) return res.status(500).json(err);
 
@@ -37,7 +37,7 @@ exports.getHistoricoUsuario = (req, res) => {
 
         const pedidos = Object.values(pedidosMap);
 
-        // Buscar histÃ³rico de cada pedido
+        // Buscar histórico de cada pedido
         let pendentes = pedidos.length;
 
         if (pendentes === 0) {
@@ -53,7 +53,7 @@ exports.getHistoricoUsuario = (req, res) => {
         });
     });
 
-    // ğŸ”¹ Buscar serviÃ§os
+    // ?? Buscar serviços
     function buscarServicos(produtos) {
         historicoModel.getServicosPorUsuario(usuario_id, (err, servicos) => {
             if (err) return res.status(500).json(err);

@@ -6,12 +6,13 @@ import {
   FaUserEdit,
   FaRegCalendarAlt,
   FaHeadset,
+  FaSignOutAlt,
 } from "react-icons/fa";
 import { useAuth } from "../../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 
-export default function PerfilLojistaPage() {
-  const { usuario } = useAuth();
+export default function PainelLojistaPage() {
+  const { usuario, logout } = useAuth();
   const navigate = useNavigate();
 
   if (!usuario) {
@@ -30,11 +31,11 @@ export default function PerfilLojistaPage() {
         <div className="flex justify-between items-center flex-wrap gap-4">
           <div>
             <h1 className="text-3xl font-bold text-green-900">
-              Painel do Lojista
+              Painel de Gestão
             </h1>
+
             <p className="text-green-800 mt-2">
-              Bem-vindo de volta,{" "}
-              <span className="font-semibold">{usuario.nome}</span>.
+              Gerencie seus produtos, serviços e operações.
             </p>
           </div>
         </div>
@@ -113,6 +114,33 @@ export default function PerfilLojistaPage() {
             </p>
             <p className="text-sm text-gray-600">
               Atualize informações do seu perfil
+            </p>
+          </div>
+        </div>
+
+        <div
+          onClick={() => {
+            const confirmar = window.confirm(
+              "Tem certeza que deseja sair da sua conta?"
+            );
+
+            if (confirmar) {
+              logout();
+              navigate("/login");
+            }
+          }}
+          className="flex items-center gap-5 p-6 mt-4 rounded-2xl shadow bg-white hover:shadow-xl hover:bg-red-50 transition cursor-pointer"
+        >
+          <div className="p-4 rounded-full bg-red-100 text-red-600 text-xl">
+            <FaSignOutAlt />
+          </div>
+
+          <div>
+            <p className="font-semibold text-red-600 text-lg">
+              Sair
+            </p>
+            <p className="text-sm text-gray-600">
+              Encerrar sua sessão
             </p>
           </div>
         </div>

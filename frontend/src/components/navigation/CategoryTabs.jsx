@@ -1,8 +1,8 @@
 import React from "react";
 import { Package, Store, Scissors, ShoppingBag } from "lucide-react";
 
-export function CategoryTabs({ selected, onChange }) {
-  const tabs = [
+export function CategoryTabs({ selected, onChange, tabs }) {
+  const tabsPadrao = [
     {
       id: "produtos",
       label: "Produtos",
@@ -20,6 +20,8 @@ export function CategoryTabs({ selected, onChange }) {
     },
   ];
 
+  const tabsExibidas = tabs || tabsPadrao;
+
   return (
     <div className="flex justify-center mt-6 px-4">
       <div
@@ -35,7 +37,7 @@ export function CategoryTabs({ selected, onChange }) {
           border-gray-100
         "
       >
-        {tabs.map((tab) => {
+        {tabsExibidas.map((tab) => {
           const Icon = tab.icon;
           const active = selected === tab.id;
 

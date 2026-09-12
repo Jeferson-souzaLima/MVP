@@ -123,6 +123,24 @@ const Agendamentos = {
         );
     },
 
+    getDatasComAgendamentosConfirmados: (loja_id, dataInicial, dataFinal, callback) => {
+        const query = `
+            SELECT DISTINCT DATE(data_inicio) AS data
+            FROM agendamentos
+            WHERE loja_id = ?
+            AND status = 'confirmado'
+            AND data_inicio >= ?
+            AND data_inicio < ?
+            ORDER BY data_inicio ASC
+        `;
+
+        db.query(
+            query,
+            [loja_id, dataInicial, dataFinal],
+            callback
+        );
+    },
+
 };
 
 module.exports = Agendamentos;

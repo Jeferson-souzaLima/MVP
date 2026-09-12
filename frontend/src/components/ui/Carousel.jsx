@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-const banners = [
+const bannersCliente = [
   {
     id: 1,
     image: "/banners/banner1.png",
@@ -26,25 +26,69 @@ const banners = [
   },
 ];
 
+/*
+ * Banners internos para lojistas.
+ *
+ * Os arquivos serão adicionados posteriormente em:
+ * /public/banners/lojista/
+ *
+ * Por enquanto deixamos a estrutura preparada.
+ */
+const bannersLojista = [
+  {
+    id: 1,
+    image: "/banners/ban_loj1.jpg",
+    alt: "Novidades para lojistas",
+  },
+  {
+    id: 2,
+    image: "/banners/ban_loj2.jpg",
+    alt: "Recursos do PetCare Connect para lojistas",
+  },
+  {
+    id: 3,
+    image: "/banners/ban_loj3.jpg",
+    alt: "Novidades da plataforma",
+  },
+  {
+    id: 4,
+    image: "/banners/ban_loj4.jpg",
+    alt: "PetCare Connect para lojistas",
+  },
+];
+
 const AUTO_PLAY_TIME = 4000;
 const MIN_SWIPE_DISTANCE = 50;
 
-export function Carousel() {
+export function Carousel({ tipo = "cliente" }) {
+  const banners =
+    tipo === "lojista"
+      ? bannersLojista
+      : bannersCliente;
+
   const [current, setCurrent] = useState(0);
   const [paused, setPaused] = useState(false);
 
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
 
+  /*
+   * Garante que o índice atual continue válido
+   * caso a quantidade de banners mude.
+   */
+  useEffect(() => {
+    setCurrent(0);
+  }, [tipo]);
+
   const nextSlide = useCallback(() => {
     setCurrent((prev) => (prev + 1) % banners.length);
-  }, []);
+  }, [banners.length]);
 
   const prevSlide = useCallback(() => {
     setCurrent((prev) =>
       prev === 0 ? banners.length - 1 : prev - 1
     );
-  }, []);
+  }, [banners.length]);
 
   useEffect(() => {
     if (paused) return;
@@ -109,7 +153,12 @@ export function Carousel() {
         {/* Slides */}
 
         <div
-          className="flex transition-transform duration-500 ease-in-out"
+          className="
+            flex
+            transition-transform
+            duration-500
+            ease-in-out
+          "
           style={{
             transform: `translateX(-${current * 100}%)`,
           }}

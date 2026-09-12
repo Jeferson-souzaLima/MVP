@@ -240,3 +240,33 @@ exports.cancelarReserva = (id, callback) => {
         });
     });
 };
+
+exports.getMeusPedidosCompletos = (usuario_id, callback) => {
+    const query = `
+        SELECT
+            p.id,
+            p.loja_id,
+            l.nome_fantasia AS nome_loja,
+            p.data_pedido,
+            p.status,
+            p.subtotal,
+            p.valor_entrega,
+            p.total,
+            p.modalidade_entrega,
+            i.id AS item_id,
+            i.tipo,
+            i.item_id AS produto_id,
+            i.nome_item,
+            i.preco_unitario,
+            i.quantidade
+        FROM Pedidos p
+        INNER JOIN Lojas l
+            ON l.id = p.loja_id
+        INNER JOIN ItensPedido i
+            ON i.pedido_id = p.id
+        WHERE p.usuario_id = ?
+        ORDER BY p.data_pedido DESC, p.id DESC
+    `;
+
+    db.query(query, [usuario_id], callback);
+};

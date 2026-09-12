@@ -1,13 +1,13 @@
-const PagamentosModel = require('../models/pagamentosModel');
-const PedidosModel = require('../models/pedidosModel');
-const AgendamentosModel = require('../models/agendamentosModel');
-const MercadoPagoService = require('../services/mercadoPagoService');
+const PagamentosModel = require('../Models/pagamentosModel');
+const PedidosModel = require('../Models/pedidosModel');
+const AgendamentosModel = require('../Models/agendamentosModel');
+const MercadoPagoService = require('../Services/mercadoPagoService');
 
 const {
     getSignatureManifest,
     validateWebhookSignature,
     InvalidWebhookSignatureError
-} = require('../utils/mercadoPagoWebhook');
+} = require('../Utils/mercadoPagoWebhook');
 
 exports.getById = (req, res) => {
 

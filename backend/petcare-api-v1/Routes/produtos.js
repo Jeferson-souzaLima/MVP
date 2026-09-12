@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const produtosController = require('../controllers/produtosController');
-const upload = require('../uploads/uploadMiddleware');
-const authMiddleware = require('../middlewares/authMiddleware');
-const authorizeRoles = require('../middlewares/authorizeRoles');
+const produtosController = require('../Controllers/produtosController');
+const upload = require('../Middlewares/uploadMiddleware');
+const authMiddleware = require('../Middlewares/authMiddleware');
+const authorizeRoles = require('../Middlewares/authorizeRoles');
 
 // Produtos específicos do lojista/distribuidoras
 router.get('/meus', authMiddleware, authorizeRoles('lojista'), produtosController.listarMeusProdutos);

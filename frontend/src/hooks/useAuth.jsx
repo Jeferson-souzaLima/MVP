@@ -25,6 +25,22 @@ export function AuthProvider({ children }) {
     localStorage.setItem("token", jwtToken);
   };
 
+  const atualizarUsuario = (dadosAtualizados) => {
+    setUsuario((usuarioAtual) => {
+      const usuarioAtualizado = {
+        ...usuarioAtual,
+        ...dadosAtualizados
+      };
+
+      localStorage.setItem(
+        "usuario",
+        JSON.stringify(usuarioAtualizado)
+      );
+
+      return usuarioAtualizado;
+    });
+  };
+
   const logout = () => {
     setUsuario(null);
     setToken(null);
@@ -33,7 +49,15 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ usuario, token, login, logout }}>
+    <AuthContext.Provider
+      value={{
+        usuario,
+        token,
+        login,
+        logout,
+        atualizarUsuario
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

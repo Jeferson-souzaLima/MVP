@@ -18,7 +18,22 @@ export function SearchDropdown({
       );
     }
 
-  if (!resultados) return null;
+  if (resultados.disponivel === false) {
+    return (
+      <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-gray-200 z-50 p-6 text-center">
+        <Package className="w-10 h-10 mx-auto text-[#0E5617] mb-3" />
+
+        <h3 className="text-base font-bold text-gray-800">
+          Busca para lojistas em breve
+        </h3>
+
+        <p className="text-sm text-gray-500 mt-2">
+          Estamos preparando esta área para você encontrar
+          mercadorias e distribuidoras parceiras.
+        </p>
+      </div>
+    );
+  }
 
   const { produtos = [], lojas = [], servicos = [] } = resultados;
 

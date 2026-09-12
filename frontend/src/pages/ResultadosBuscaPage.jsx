@@ -16,6 +16,7 @@ export default function ResultadosBuscaPage() {
 
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState("");
+  const [buscaDisponivel, setBuscaDisponivel] = useState(true);
 
   const [produtos, setProdutos] = useState([]);
   const [lojas, setLojas] = useState([]);
@@ -38,6 +39,7 @@ export default function ResultadosBuscaPage() {
     if (!busca.trim()) {
       setLoading(false);
       setErro("");
+      setBuscaDisponivel(true);
       setProdutos([]);
       setLojas([]);
       setServicos([]);
@@ -52,13 +54,39 @@ export default function ResultadosBuscaPage() {
         setErro("");
 
         const data = await buscarResultados(
-            busca,
-            controller.signal
-        );
+        busca,
+        controller.signal
+      );
 
-        setProdutos(data.produtos ?? []);
-        setLojas(data.lojas ?? []);
-        setServicos(data.servicos ?? []);
+      const disponivel = data.disponivel !== false;
+
+      setBuscaDisponivel(disponivel);
+
+      setProdutos(data.produtos ?? []);
+      setLojas(data.lojas ?? []);
+      setServicos(data.servicos ?? []);
+
+      if (disponivel) {
+        const termo = busca.trim();
+
+        if (termo) {
+          const historicoAtual = JSON.parse(
+            localStorage.getItem("petcare_historico_busca") || "[]"
+          );
+
+          const historicoAtualizado = [
+            termo,
+            ...historicoAtual.filter(
+              (item) => item.toLowerCase() !== termo.toLowerCase()
+            ),
+          ].slice(0, 8);
+
+          localStorage.setItem(
+            "petcare_historico_busca",
+            JSON.stringify(historicoAtualizado)
+          );
+        }
+      }
       } catch (error) {
         if (
           error.name !== "AbortError" &&
@@ -124,9 +152,26 @@ export default function ResultadosBuscaPage() {
         </div>
       )}
 
+      {!loading && !erro && !buscaDisponivel && (
+        <div className="bg-white rounded-2xl border shadow-sm p-12 text-center">
+          <div className="text-6xl mb-4">
+            📦
+          </div>
+
+          <h2 className="text-2xl font-semibold text-gray-800">
+            Busca para lojistas em breve
+          </h2>
+
+          <p className="mt-3 text-gray-500 max-w-xl mx-auto">
+            Estamos preparando esta área para você encontrar
+            mercadorias e distribuidoras parceiras.
+          </p>
+        </div>
+      )}
+
       {/* Conteúdo */}
 
-      {!loading && !erro && (
+      {!loading && !erro && buscaDisponivel && (
         <div className="space-y-12">
 
           {/* Nenhum resultado */}

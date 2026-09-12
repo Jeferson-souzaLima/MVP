@@ -1,5 +1,28 @@
 const axios = require("axios");
 
+async function buscarNoNominatim(enderecoCompleto) {
+    const response = await axios.get(
+        "https://nominatim.openstreetmap.org/search",
+        {
+            params: {
+                q: enderecoCompleto,
+                format: "json",
+                limit: 1,
+                countrycodes: "br"
+            },
+            headers: {
+                "User-Agent": "PetCareConnect/1.0"
+            }
+        }
+    );
+
+    if (!response.data.length) {
+        return null;
+    }
+
+    return response.data[0];
+}
+
 exports.buscarCoordenadas = async ({
     endereco,
     cidade,
@@ -14,54 +37,89 @@ exports.buscarCoordenadas = async ({
         cep
     });
 
-    const enderecoCompleto = [
-        endereco,
-        cidade,
-        uf,
-        cep,
-        "Brasil"
-    ]
-        .filter(Boolean)
-        .join(", ");
-
     try {
 
-        const response = await axios.get(
-            "https://nominatim.openstreetmap.org/search",
-            {
-                params: {
-                    q: enderecoCompleto,
-                    format: "json",
-                    limit: 1
-                },
-                headers: {
-                    "User-Agent": "PetCareConnect/1.0"
-                }
-            }
+        /*
+         * 1ª tentativa:
+         * endereço completo, sem CEP.
+         *
+         * Exemplo:
+         * Rua X, 100, Centro, Carapicuíba, SP, Brasil
+         */
+        const enderecoComNumero = [
+            endereco,
+            cidade,
+            uf,
+            "Brasil"
+        ]
+            .filter(Boolean)
+            .join(", ");
+
+        console.log(
+            "Tentativa 1 - endereço completo:",
+            enderecoComNumero
         );
 
-        if (!response.data.length) {
+        let resultado = await buscarNoNominatim(
+            enderecoComNumero
+        );
 
-            return null;
+        /*
+         * 2ª tentativa:
+         * remove o número para aumentar a chance de encontrar
+         * a rua/bairro/cidade.
+         *
+         * Isso é um fallback de localização aproximada.
+         */
+        if (!resultado) {
 
+            const enderecoSemNumero = [
+                endereco
+                    ? endereco.replace(/,\s*\d+.*$/, "")
+                    : "",
+                cidade,
+                uf,
+                "Brasil"
+            ]
+                .filter(Boolean)
+                .join(", ");
+
+            console.log(
+                "Tentativa 2 - endereço sem número:",
+                enderecoSemNumero
+            );
+
+            resultado = await buscarNoNominatim(
+                enderecoSemNumero
+            );
         }
 
-        console.log("Coordenadas encontradas:", response.data[0]);
+        if (!resultado) {
+
+            console.log(
+                "Nenhuma coordenada encontrada para o endereço."
+            );
+
+            return null;
+        }
+
+        console.log(
+            "Coordenadas encontradas:",
+            resultado
+        );
 
         return {
-
-            latitude: Number(response.data[0].lat),
-
-            longitude: Number(response.data[0].lon)
-
+            latitude: Number(resultado.lat),
+            longitude: Number(resultado.lon)
         };
 
     } catch (err) {
 
-        console.error("Erro ao buscar coordenadas:", err.message);
+        console.error(
+            "Erro ao buscar coordenadas:",
+            err.message
+        );
 
         return null;
-
     }
-
 };

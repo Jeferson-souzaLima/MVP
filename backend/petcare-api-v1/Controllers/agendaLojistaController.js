@@ -1,8 +1,8 @@
-const AgendaConfig = require('../models/AgendaConfigModel');
-const AgendaDisponibilidade = require('../models/AgendaDisponibilidadeModel');
-const AgendaBloqueios = require('../models/AgendaBloqueiosModel');
-const Agendamentos = require('../models/agendamentosModel');
-const Servicos = require('../models/servicosModel');
+const AgendaConfig = require('../Models/agendaConfigModel');
+const AgendaDisponibilidade = require('../Models/agendaDisponibilidadeModel');
+const AgendaBloqueios = require('../Models/agendaBloqueiosModel');
+const Agendamentos = require('../Models/agendamentosModel');
+const Servicos = require('../Models/servicosModel');
 
 // ========================
 // Configura��o da Agenda
@@ -345,4 +345,45 @@ exports.deleteDisponibilidadeByLoja = (req, res) => {
         });
 
     });
+};
+
+exports.getDatasComAgendamentosConfirmados = (req, res) => {
+    const loja_id = req.usuario.loja_id;
+
+    if (!loja_id) {
+        return res.status(400).json({
+            message: 'Loja não identificada.'
+        });
+    }
+
+    const { data_inicial, data_final } = req.query;
+
+    if (!data_inicial || !data_final) {
+        return res.status(400).json({
+            message: 'Data inicial e data final são obrigatórias.'
+        });
+    }
+
+    const dataInicial = `${data_inicial} 00:00:00`;
+    const dataFinal = `${data_final} 00:00:00`;
+
+    Agendamentos.getDatasComAgendamentosConfirmados(
+        loja_id,
+        dataInicial,
+        dataFinal,
+        (err, resultados) => {
+            if (err) {
+                console.error(
+                    'Erro ao buscar datas com agendamentos confirmados:',
+                    err
+                );
+
+                return res.status(500).json({
+                    message: 'Erro ao buscar agendamentos.'
+                });
+            }
+
+            return res.json(resultados);
+        }
+    );
 };

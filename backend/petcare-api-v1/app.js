@@ -13,14 +13,16 @@ const servicosRoutes = require('./Routes/servicos');
 const pedidosRoutes = require('./Routes/pedidos');
 const itensPedidoRoutes = require('./Routes/itensPedido');
 const authRoutes = require('./Routes/auth');
-const petRoutes = require('./Routes/pets');
-const agendaLojista = require('./Routes/agendaLojista');
-const agendamentos = require('./Routes/agendamentos');
+const petsRoutes = require('./Routes/pets');
+const agendaLojistaRoutes = require('./Routes/agendaLojista');
+const agendamentosRoutes = require('./Routes/agendamentos');
 const buscaRoutes = require('./Routes/busca');
 const favoritosRoutes = require('./Routes/favoritos');
 const geolocalizacaoRoutes = require("./Routes/geolocalizacao");
-const pagamentosRoutes = require('./Routes/pagamentosRoutes');
+const pagamentosRoutes = require('./Routes/pagamentos');
+const relatoriosRoutes = require('./Routes/relatorios');
 const pedidosModel = require('./Models/pedidosModel');
+const cepRoutes = require('./Routes/cep');
 
 const app = express();
 
@@ -40,14 +42,16 @@ app.use('/servicos', servicosRoutes);
 app.use('/pedidos', pedidosRoutes);
 app.use('/itenspedido', itensPedidoRoutes);
 app.use('/auth', authRoutes);
-app.use('/pets', petRoutes);
+app.use('/pets', petsRoutes);
 app.use('/historico', require('./Routes/historicoUsuario'));
-app.use('/agenda-lojista', agendaLojista);
-app.use('/agendamentos', agendamentos);
+app.use('/agenda-lojista', agendaLojistaRoutes);
+app.use('/agendamentos', agendamentosRoutes);
 app.use('/busca', buscaRoutes);
 app.use('/favoritos', favoritosRoutes);
 app.use('/geolocalizacao', geolocalizacaoRoutes);
 app.use('/pagamentos', pagamentosRoutes);
+app.use('/relatorios', relatoriosRoutes);
+app.use('/cep', cepRoutes);
 
 // Libera reservas de estoque expiradas. O pagamento aprovado fora da janela não confirma o pedido.
 setInterval(() => pedidosModel.cancelarReservasExpiradas((err) => {

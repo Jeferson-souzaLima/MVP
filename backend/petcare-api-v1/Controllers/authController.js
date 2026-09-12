@@ -164,7 +164,9 @@ exports.me = (req, res) => {
     const userId = req.usuario.id;
 
     db.query(
-        'SELECT id, nome, email, tipo FROM Usuarios WHERE id = ?',
+        `SELECT id, nome, email, telefone, tipo, cidade, uf, cep, logradouro,
+                numero, complemento, bairro, latitude, longitude
+         FROM Usuarios WHERE id = ?`,
         [userId],
         (err, results) => {
             if (err) return res.status(500).send(err);

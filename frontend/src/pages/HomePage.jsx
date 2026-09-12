@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from "react";
-
 import { Carousel } from "@/components/ui/Carousel";
 import { CategoryTabs } from "@/components/navigation/CategoryTabs";
 import { ProductSection } from "@/components/sections/ProductSection";
@@ -7,24 +6,40 @@ import { LojaSection } from "@/components/sections/LojaSection";
 import { ServicosSection } from "@/components/sections/ServicosSection";
 import { Footer } from "@/components/layout/Footer";
 import { Alert } from "@/components/ui/Alert";
-
-
+import { useSearchParams } from "react-router-dom";
 import { buscarProdutos } from "@/services/produtoService";
 import { buscarLojas } from "@/services/lojaService";
 import { buscarServicos } from "@/services/servicoService";
 import { buscarConteudoPorLocalizacao } from "@/services/geolocalizacaoService";
-
 import { useGeolocation } from "../hooks/useGeolocation";
 
 export default function HomePage() {
 
-    const [selectedCategory, setSelectedCategory] = useState("produtos");
+    const [searchParams] = useSearchParams();
 
-    const [produtos, setProdutos] = useState(null);
+    const categoriaInicial = searchParams.get("categoria");
+
+    const categoriasValidas = ["produtos", "lojas", "servicos"];
+
+    const [selectedCategory, setSelectedCategory] = useState(
+    categoriasValidas.includes(categoriaInicial)
+        ? categoriaInicial
+        : "produtos"
+    );
+
+    useEffect(() => {
+        if (categoriasValidas.includes(categoriaInicial)) {
+            setSelectedCategory(categoriaInicial);
+        }
+    }, [categoriaInicial]);
+
+    const [produtos, setProdutos] = useState([]);
     const [lojas, setLojas] = useState(null);
-    const [servicos, setServicos] = useState(null);
+    const [servicos, setServicos] = useState([]);
 
     const [modoBusca, setModoBusca] = useState(null);
+    const [modoBuscaProdutos, setModoBuscaProdutos] = useState("geral");
+    const [modoBuscaServicos, setModoBuscaServicos] = useState("geral");
 
     const [loadingDados, setLoadingDados] = useState(false);
 
@@ -47,21 +62,17 @@ export default function HomePage() {
 
     useEffect(() => {
 
+        let isMounted = true;
+
         async function carregarDados() {
 
             try {
 
                 setLoadingDados(true);
 
-                // ===============================
-                // PRODUTOS
-                // ===============================
+                if (selectedCategory === "produtos") {
 
-               if (
-                    selectedCategory === "produtos" &&
-                    !produtos &&
-                    !geoLoading
-                ) {
+                    let dadosProdutos = [];
 
                     if (latitude && longitude) {
 
@@ -71,79 +82,43 @@ export default function HomePage() {
                                 longitude
                             );
 
-                        setProdutos(data.produtos);
+                        const produtosProximos =
+                            data?.produtos ?? [];
 
-                    } else {
+                        if (produtosProximos.length > 0) {
 
-                        const data = await buscarProdutos();
-
-                        setProdutos(data);
-
-                    }
-
-                }
-
-                // ===============================
-                // LOJAS
-                // ===============================
-
-                if (
-                    selectedCategory === "lojas" &&
-                    !lojas &&
-                    !geoLoading
-                ) {
-
-                    if (latitude && longitude) {
-
-                        const data =
-                            await buscarConteudoPorLocalizacao(
-                                latitude,
-                                longitude
-                            );
-
-                        if (data.lojas.length > 0) {
-
-                            setLojas(data.lojas);
-
-                            setModoBusca("proximidade");
+                            dadosProdutos = produtosProximos;
+                            setModoBuscaProdutos("proximidade");
 
                         } else {
 
-                            const todasLojas =
-                                await buscarLojas();
+                            dadosProdutos =
+                                await buscarProdutos();
 
-                            setLojas(todasLojas);
-
-                            setModoBusca(
-                                "todas_sem_resultado"
-                            );
+                            setModoBuscaProdutos("geral");
 
                         }
 
                     } else {
 
-                        const todasLojas =
-                            await buscarLojas();
-
-                        setLojas(todasLojas);
-
-                        setModoBusca(
-                            "todas_localizacao_desativada"
-                        );
+                        dadosProdutos = await buscarProdutos();
+                        setModoBuscaProdutos("geral");
 
                     }
 
+                    if (isMounted) {
+                        setProdutos(dadosProdutos ?? []);
+                    }
+
+                    return;
+
                 }
 
-                // ===============================
-                // SERVIÇOS
-                // ===============================
+                if (selectedCategory === "lojas") {
 
-                if (
-                    selectedCategory === "servicos" &&
-                    !servicos &&
-                    !geoLoading
-                ) {
+                    if (geoLoading) {
+                        return;
+                    }
 
                     if (latitude && longitude) {
 
@@ -153,14 +128,75 @@ export default function HomePage() {
                                 longitude
                             );
 
-                        setServicos(data.servicos);
+                        if (data?.lojas?.length > 0) {
+
+                            if (isMounted) {
+                                setLojas(data.lojas);
+                                setModoBusca("proximidade");
+                            }
+
+                            return;
+
+                        }
+
+                        const todasLojas = await buscarLojas();
+
+                        if (isMounted) {
+                            setLojas(todasLojas);
+                            setModoBusca("todas_sem_resultado");
+                        }
+
+                        return;
+
+                    }
+
+                    const todasLojas = await buscarLojas();
+
+                    if (isMounted) {
+                        setLojas(todasLojas);
+                        setModoBusca("todas_localizacao_desativada");
+                    }
+
+                    return;
+
+                }
+
+                if (selectedCategory === "servicos") {
+
+                    let dadosServicos = [];
+
+                    if (latitude && longitude) {
+
+                        const data =
+                            await buscarConteudoPorLocalizacao(
+                                latitude,
+                                longitude
+                            );
+
+                        const servicosProximos =
+                            data?.servicos ?? [];
+
+                        if (servicosProximos.length > 0) {
+
+                            dadosServicos = servicosProximos;
+                            setModoBuscaServicos("proximidade");
+
+                        } else {
+
+                            dadosServicos = await buscarServicos();
+                            setModoBuscaServicos("geral");
+
+                        }
 
                     } else {
 
-                        const data = await buscarServicos();
+                        dadosServicos = await buscarServicos();
+                        setModoBuscaServicos("geral");
 
-                        setServicos(data);
+                    }
 
+                    if (isMounted) {
+                        setServicos(dadosServicos ?? []);
                     }
 
                 }
@@ -172,23 +208,27 @@ export default function HomePage() {
                     error
                 );
 
-                } finally {
+            } finally {
 
+                if (isMounted) {
                     setLoadingDados(false);
-
                 }
+
+            }
 
         }
 
         carregarDados();
 
+        return () => {
+            isMounted = false;
+        };
+
     }, [
         selectedCategory,
-        produtos,
-        lojas,
-        servicos,
         latitude,
-        longitude
+        longitude,
+        geoLoading
     ]);
 
     return (

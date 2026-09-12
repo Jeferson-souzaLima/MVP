@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useCarrinho } from "../context/CarrinhoContext";
+import { Footer } from "../components/layout/Footer";
 import CarrinhoItem from "../components/cards/CarrinhoItem";
 import api from "../services/api";
 
@@ -14,7 +15,17 @@ export default function CarrinhoPage() {
   const [finalizando, setFinalizando] = useState(false);
 
   if (!carrinho.itens.length)
-    return <p className="text-center mt-10">Seu carrinho está vazio</p>;
+    return (
+      <div className="bg-[#EBE9E9] min-h-screen flex flex-col">
+        <main className="flex-1">
+          <p className="text-center mt-10">
+            Seu carrinho está vazio
+          </p>
+        </main>
+
+        <Footer />
+      </div>
+    );
 
   const totalFormatado = carrinho.total.toLocaleString("pt-BR", {
     style: "currency",
@@ -46,7 +57,9 @@ export default function CarrinhoPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-4 pb-40">
+  <div className="bg-[#EBE9E9] min-h-screen flex flex-col">
+    <main className="flex-1">
+      <div className="max-w-4xl mx-auto p-4">
 
       {/* ITENS */}
       <div className="space-y-4">
@@ -105,24 +118,36 @@ export default function CarrinhoPage() {
         <p className="rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-800">Você escolherá Pix ou cartão com segurança no Checkout do Mercado Pago.</p>
       </div>
 
-      {/* TOTAL FIXO */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4">
-        <div className="max-w-4xl mx-auto flex justify-between items-center">
+      {/* TOTAL E PAGAMENTO */}
+      <div className="mt-8 bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
+        <div className="flex justify-between items-center">
           <span className="text-lg font-bold">Total</span>
+
           <span className="text-xl font-bold text-green-700">
             {totalFormatado}
           </span>
         </div>
 
-        {erro && <p className="mt-3 text-sm text-red-700">{erro}</p>}
+        {erro && (
+          <p className="mt-3 text-sm text-red-700">
+            {erro}
+          </p>
+        )}
+
         <button
           className="mt-3 w-full bg-green-700 text-white py-3 rounded-xl font-semibold"
           disabled={finalizando}
           onClick={finalizarPedido}
         >
-          {finalizando ? "Preparando pagamento..." : "Ir para pagamento"}
+          {finalizando
+            ? "Preparando pagamento..."
+            : "Ir para pagamento"}
         </button>
       </div>
     </div>
+  </main>
+
+    <Footer />
+  </div> 
   );
 }

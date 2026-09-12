@@ -11,42 +11,51 @@ export function BuscaProvider({ children }) {
 
   const controllerRef = useRef(null);
 
-  useEffect(() => {
-    const termo = busca.trim();
+    useEffect(() => {
+      const termo = busca.trim();
 
-    if (termo.length < 2) {
-      controllerRef.current?.abort();
-      setResultados(null);
-      setLoading(false);
-      setDropdownAberto(false);
-      return;
-    }
-
-    const timer = setTimeout(async () => {
-      controllerRef.current?.abort();
-
-      const controller = new AbortController();
-      controllerRef.current = controller;
-
-      try {
-        setLoading(true);
-
-        const data = await buscar(termo, controller.signal);
-
-        setResultados(data);
-        setDropdownAberto(true);
-        
-      } catch (error) {
-        if (error.name !== "CanceledError" && error.name !== "AbortError") {
-          console.error("Erro ao buscar:", error);
-        }
-      } finally {
+      if (termo.length < 2) {
+        controllerRef.current?.abort();
+        setResultados(null);
         setLoading(false);
+        setDropdownAberto(false);
+        return;
       }
-    }, 300);
 
-    return () => clearTimeout(timer);
-  }, [busca]);
+      const timer = setTimeout(async () => {
+        controllerRef.current?.abort();
+
+        const controller = new AbortController();
+        controllerRef.current = controller;
+
+        try {
+          setLoading(true);
+
+          const data = await buscar(termo, controller.signal);
+
+          if (controller.signal.aborted) return;
+
+          setResultados(data);
+          setDropdownAberto(true);
+
+        } catch (error) {
+          if (
+            error.name !== "CanceledError" &&
+            error.name !== "AbortError"
+          ) {
+            console.error("Erro ao buscar:", error);
+          }
+        } finally {
+          if (!controller.signal.aborted) {
+            setLoading(false);
+          }
+        }
+      }, 300);
+
+      return () => {
+        clearTimeout(timer);
+      };
+    }, [busca]);
 
   function fecharBusca() {
     setDropdownAberto(false);

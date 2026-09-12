@@ -1,8 +1,10 @@
 import { createBrowserRouter } from "react-router-dom";
 import Layout from "../layout/Layout";
+import { useAuth } from "../hooks/useAuth";
 
 // PÃƒÂ¡ginas pÃƒÂºblicas
 import HomePage from "../pages/HomePage";
+import HomeLojistaPage from "../pages/lojista/HomeLojistaPage";
 import ProdutoDetalhes from "../pages/ProdutoDetalhes";
 import LojaDetalhes from "../pages/LojaDetalhes";
 import ResultadosBuscaPage from "../pages/ResultadosBuscaPage";
@@ -13,15 +15,15 @@ import VerificarEmailPage from "../pages/VerificarEmailPage";
 
 // Cliente
 import PerfilPage from "../pages/cliente/PerfilPage";
-import HistoricoPage from "../pages/cliente/HistoricoPage";
 import CarrinhoPage from "../pages/CarrinhoPage";
 import Agendamento from "../pages/Agendamento";
 import MeusAgendamentosPage from "../pages/cliente/MeusAgendamentosPage";
 import FavoritosPage from "../pages/cliente/FavoritosPage";
 import PagamentoRetornoPage from "../pages/PagamentoRetornoPage";
+import MeusPedidosPage from "../pages/cliente/MeusPedidosPage";
 
 // Lojista
-import PerfilLojistaPage from "../pages/lojista/PerfilLojistaPage";
+import PainelLojistaPage from "../pages/lojista/PainelLojistaPage";
 import ProdutosLojistaPage from "../pages/lojista/ProdutosLojistaPage";
 import AgendaLojistaPage from "../pages/lojista/AgendaLojistaPage";
 import ConfiguracoesAgendaPage from "../pages/lojista/ConfiguracoesAgendaPage";
@@ -33,6 +35,18 @@ import RelatoriosPage from "../pages/lojista/RelatoriosPage";
 // ProteÃƒÂ§ÃƒÂ£o
 import PrivateRoute from "../components/navigation/PrivateRoute";
 import ServicosLojistaPage from "../pages/lojista/ServicosLojistaPage";
+
+
+function HomeRoute() {
+  const { usuario } = useAuth();
+
+  if (usuario?.tipo === "lojista") {
+    return <HomeLojistaPage />;
+  }
+
+  return <HomePage />;
+}
+
 
 export const router = createBrowserRouter([
   // ===============================
@@ -46,7 +60,7 @@ export const router = createBrowserRouter([
   {
     element: <Layout />,
     children: [
-      { path: "/", element: <HomePage /> },
+      { path: "/", element: <HomeRoute /> },
       { path: "/busca", element: <ResultadosBuscaPage /> },
       { path: "/produtos/:id", element: <ProdutoDetalhes /> },
       { path: "/lojas/:id", element: <LojaDetalhes /> },
@@ -64,10 +78,10 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: "/historico",
+        path: "/meus-pedidos",
         element: (
           <PrivateRoute role="cliente">
-            <HistoricoPage />
+            <MeusPedidosPage />
           </PrivateRoute>
         ),
       },
@@ -111,7 +125,7 @@ export const router = createBrowserRouter([
         path: "/perfil-lojista",
         element: (
           <PrivateRoute role="lojista">
-            <PerfilLojistaPage />
+            <PainelLojistaPage />
           </PrivateRoute>
         ),
       },

@@ -1,6 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, ShoppingCart, User, X } from "lucide-react";
+import {
+  Search,
+  ShoppingCart,
+  User,
+  X,
+  ClipboardList,
+} from "lucide-react";
 
 import { useAuth } from "../../hooks/useAuth";
 import { useBusca } from "../../hooks/useBusca";
@@ -62,6 +68,16 @@ export function Header() {
       usuario.tipo === "lojista"
         ? "/perfil-lojista"
         : "/perfil"
+    );
+  }
+
+  function handlePainel() {
+    navigate("/perfil-lojista");
+  }
+
+  function handleCarrinhoLojista() {
+    window.alert(
+      "O carrinho para lojistas ainda não está disponível."
     );
   }
 
@@ -275,21 +291,43 @@ export function Header() {
         {/* Desktop */}
         <div className="hidden md:flex items-center gap-8 shrink-0">
 
-          <div
-            className="flex flex-col items-center cursor-pointer text-white"
-            onClick={() => navigate("/carrinho")}
-          >
-            <ShoppingCart className="w-7 h-7" />
-            <span className="text-sm">Carrinho</span>
-          </div>
+          {usuario?.tipo === "lojista" ? (
+            <>
+              <div
+                className="flex flex-col items-center cursor-pointer text-white"
+                onClick={handlePainel}
+              >
+                <ClipboardList className="w-7 h-7" />
+                <span className="text-sm">Painel</span>
+              </div>
 
-          <div
-            className="flex flex-col items-center cursor-pointer text-white"
-            onClick={handlePerfil}
-          >
-            <User className="w-7 h-7" />
-            <span className="text-sm">Conta</span>
-          </div>
+              <div
+                className="flex flex-col items-center cursor-pointer text-white"
+                onClick={handleCarrinhoLojista}
+              >
+                <ShoppingCart className="w-7 h-7" />
+                <span className="text-sm">Carrinho</span>
+              </div>
+            </>
+          ) : (
+            <>
+              <div
+                className="flex flex-col items-center cursor-pointer text-white"
+                onClick={() => navigate("/carrinho")}
+              >
+                <ShoppingCart className="w-7 h-7" />
+                <span className="text-sm">Carrinho</span>
+              </div>
+
+              <div
+                className="flex flex-col items-center cursor-pointer text-white"
+                onClick={handlePerfil}
+              >
+                <User className="w-7 h-7" />
+                <span className="text-sm">Conta</span>
+              </div>
+            </>
+          )}
 
         </div>
 
@@ -307,15 +345,31 @@ export function Header() {
           ) : (
             <div className="flex items-center gap-5 ml-3">
 
-              <ShoppingCart
-                className="w-7 h-7 text-white cursor-pointer"
-                onClick={() => navigate("/carrinho")}
-              />
+              {usuario?.tipo === "lojista" ? (
+                <>
+                  <ClipboardList
+                    className="w-7 h-7 text-white cursor-pointer"
+                    onClick={handlePainel}
+                  />
 
-              <User
-                className="w-7 h-7 text-white cursor-pointer"
-                onClick={handlePerfil}
-              />
+                  <ShoppingCart
+                    className="w-7 h-7 text-white cursor-pointer"
+                    onClick={handleCarrinhoLojista}
+                  />
+                </>
+              ) : (
+                <>
+                  <ShoppingCart
+                    className="w-7 h-7 text-white cursor-pointer"
+                    onClick={() => navigate("/carrinho")}
+                  />
+
+                  <User
+                    className="w-7 h-7 text-white cursor-pointer"
+                    onClick={handlePerfil}
+                  />
+                </>
+              )}
 
             </div>
           )}

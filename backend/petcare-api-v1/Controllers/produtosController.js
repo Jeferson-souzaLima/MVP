@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const produtosModel = require('../models/produtosModel');
+const produtosModel = require('../Models/produtosModel');
 
 //
 // ===============================

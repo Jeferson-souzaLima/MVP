@@ -1,15 +1,15 @@
-Ôªøconst express = require('express');
+const express = require('express');
 const router = express.Router();
-const servicosController = require('../controllers/servicosController');
-const authMiddleware = require('../middlewares/authMiddleware');
-const authorizeRoles = require('../middlewares/authorizeRoles');
+const servicosController = require('../Controllers/servicosController');
+const authMiddleware = require('../Middlewares/authMiddleware');
+const authorizeRoles = require('../Middlewares/authorizeRoles');
 
 //
 // ===============================
-// üîê ROTAS PROTEGIDAS (LOJISTA)
+// ?? ROTAS PROTEGIDAS (LOJISTA)
 // ===============================
 
-// Meus servi√ßos (vem do token)
+// Meus serviÁos (vem do token)
 router.get(
     '/meus',
     authMiddleware,
@@ -40,13 +40,13 @@ router.delete(
 
 //
 // ===============================
-// üåç ROTAS P√öBLICAS
+// ?? ROTAS P⁄BLICAS
 // ===============================
 
-// Servi√ßos de uma loja espec√≠fica (ativos)
+// ServiÁos de uma loja especÌfica (ativos)
 router.get('/loja/:id', servicosController.listarServicosPorLoja);
 
-// Lista todos (se quiser manter p√∫blico)
+// Lista todos (se quiser manter p˙blico)
 router.get('/', servicosController.listarServicos);
 
 // Detalhe (somente ativo)

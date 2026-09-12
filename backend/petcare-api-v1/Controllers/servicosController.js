@@ -1,4 +1,4 @@
-const Servicos = require('../models/servicosModel');
+const Servicos = require('../Models/servicosModel');
 
 //
 // ===============================
