@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const buscaController = require('../Controllers/buscaController');
-const authOptionalMiddleware = require('../Middlewares/authOptionalMiddleware');
+const authOptionalMiddleware = require('../middlewares/authOptionalMiddleware');
 
 router.get(
     '/',

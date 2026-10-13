@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const itensPedidoController = require('../Controllers/itensPedidoController');
-const authMiddleware = require('../Middlewares/authMiddleware');
+const authMiddleware = require('../middlewares/authMiddleware');
 
 router.use(authMiddleware);
 // Listar itens de um pedido

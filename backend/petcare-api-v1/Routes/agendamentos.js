@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const agendamentosController = require('../Controllers/agendamentosController');
 const agendaLojistaController = require('../Controllers/agendaLojistaController');
-const authMiddleware = require('../Middlewares/authMiddleware');
+const authMiddleware = require('../middlewares/authMiddleware');
 
 router.use(authMiddleware);
 

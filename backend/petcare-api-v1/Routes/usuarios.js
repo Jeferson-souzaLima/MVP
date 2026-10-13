@@ -3,7 +3,7 @@ const router = express.Router();
 
 const authController = require('../Controllers/authController');
 const usuariosController = require('../Controllers/usuariosController');
-const authMiddleware = require('../Middlewares/authMiddleware');
+const authMiddleware = require('../middlewares/authMiddleware');
 
 
 router.get('/me', authMiddleware, authController.me);
