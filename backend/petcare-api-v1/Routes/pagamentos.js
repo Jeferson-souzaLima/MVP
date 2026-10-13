@@ -4,7 +4,7 @@ const router = express.Router();
 
 const pagamentosController = require('../Controllers/pagamentosController');
 
-const authMiddleware = require('../Middlewares/authMiddleware');
+const authMiddleware = require('../middlewares/authMiddleware');
 
 // ===============================
 // MERCADO PAGO – WEBHOOK

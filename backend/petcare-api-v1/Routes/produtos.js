@@ -1,18 +1,18 @@
 const express = require('express');
 const router = express.Router();
 const produtosController = require('../Controllers/produtosController');
-const upload = require('../Middlewares/uploadMiddleware');
-const authMiddleware = require('../Middlewares/authMiddleware');
-const authorizeRoles = require('../Middlewares/authorizeRoles');
+const upload = require('../middlewares/uploadMiddleware');
+const authMiddleware = require('../middlewares/authMiddleware');
+const authorizeRoles = require('../middlewares/authorizeRoles');
 
-// Produtos específicos do lojista/distribuidoras
+// Produtos especï¿½ficos do lojista/distribuidoras
 router.get('/meus', authMiddleware, authorizeRoles('lojista'), produtosController.listarMeusProdutos);
 router.get('/distribuidoras', authMiddleware, authorizeRoles('lojista'), produtosController.listarProdutosDistribuidoras);
 
-// Produtos de uma loja específica (público)
+// Produtos de uma loja especï¿½fica (pï¿½blico)
 router.get('/loja/:id', produtosController.listarProdutosPorLoja);
 
-// CRUD público/admin
+// CRUD pï¿½blico/admin
 router.get('/', produtosController.listarProdutos);
 router.get('/:id', produtosController.getProduto);
 

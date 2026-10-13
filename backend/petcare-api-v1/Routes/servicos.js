@@ -1,15 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const servicosController = require('../Controllers/servicosController');
-const authMiddleware = require('../Middlewares/authMiddleware');
-const authorizeRoles = require('../Middlewares/authorizeRoles');
+const authMiddleware = require('../middlewares/authMiddleware');
+const authorizeRoles = require('../middlewares/authorizeRoles');
 
 //
 // ===============================
 // ?? ROTAS PROTEGIDAS (LOJISTA)
 // ===============================
 
-// Meus serviços (vem do token)
+// Meus serviï¿½os (vem do token)
 router.get(
     '/meus',
     authMiddleware,
@@ -40,13 +40,13 @@ router.delete(
 
 //
 // ===============================
-// ?? ROTAS PÚBLICAS
+// ?? ROTAS Pï¿½BLICAS
 // ===============================
 
-// Serviços de uma loja específica (ativos)
+// Serviï¿½os de uma loja especï¿½fica (ativos)
 router.get('/loja/:id', servicosController.listarServicosPorLoja);
 
-// Lista todos (se quiser manter público)
+// Lista todos (se quiser manter pï¿½blico)
 router.get('/', servicosController.listarServicos);
 
 // Detalhe (somente ativo)

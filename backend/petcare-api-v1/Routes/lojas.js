@@ -2,9 +2,9 @@ const express = require('express');
 const router = express.Router();
 const lojasController = require('../Controllers/lojasController');
 const minhaLojaController = require('../Controllers/minhaLojaController');
-const upload = require('../Middlewares/uploadMiddleware');
-const authMiddleware = require('../Middlewares/authMiddleware');
-const authorizeRoles = require('../Middlewares/authorizeRoles');
+const upload = require('../middlewares/uploadMiddleware');
+const authMiddleware = require('../middlewares/authMiddleware');
+const authorizeRoles = require('../middlewares/authorizeRoles');
 
 // Rotas públicas
 router.get('/', lojasController.listarLojas);
