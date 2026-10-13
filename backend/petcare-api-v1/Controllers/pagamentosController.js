@@ -7,7 +7,7 @@ const {
     getSignatureManifest,
     validateWebhookSignature,
     InvalidWebhookSignatureError
-} = require('../Utils/mercadoPagoWebhook');
+} = require('../utils/mercadoPagoWebhook');
 
 exports.getById = (req, res) => {
 

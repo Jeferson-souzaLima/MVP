@@ -8,7 +8,7 @@ const {
     getSignatureManifest,
     validateWebhookSignature,
     InvalidWebhookSignatureError
-} = require('../Utils/mercadoPagoWebhook');
+} = require('../utils/mercadoPagoWebhook');
 
 const secret = 'webhook-secret-for-test-only';
 const requestId = 'request-123';

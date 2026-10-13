@@ -3,7 +3,7 @@ const test = require('node:test');
 
 const {
     buildWebhookNotificationUrl
-} = require('../Utils/mercadoPagoNotificationUrl');
+} = require('../utils/mercadoPagoNotificationUrl');
 
 test('forces Webhooks when creating a Mercado Pago preference', () => {
     assert.equal(
