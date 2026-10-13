@@ -3,8 +3,9 @@
     "version": "1.0.0",
     "main": "app.js",
     "scripts": {
-        "dev": "nodemon app.js",
-        "test": "node --test Tests"
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "test": "node --test Tests"
     },
     "keywords": [],
     "author": "",
