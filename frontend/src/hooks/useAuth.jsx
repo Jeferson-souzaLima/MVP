@@ -1,5 +1,11 @@
 // hooks/useAuth.js
-import { createContext, useContext, useState, useEffect } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback
+} from "react";
 
 const AuthContext = createContext();
 
@@ -25,7 +31,7 @@ export function AuthProvider({ children }) {
     localStorage.setItem("token", jwtToken);
   };
 
-  const atualizarUsuario = (dadosAtualizados) => {
+  const atualizarUsuario = useCallback((dadosAtualizados) => {
     setUsuario((usuarioAtual) => {
       const usuarioAtualizado = {
         ...usuarioAtual,
@@ -39,7 +45,7 @@ export function AuthProvider({ children }) {
 
       return usuarioAtualizado;
     });
-  };
+  }, []);
 
   const logout = () => {
     setUsuario(null);

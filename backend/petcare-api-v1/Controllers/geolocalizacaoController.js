@@ -4,6 +4,21 @@ exports.buscar = (req, res) => {
 
     const { latitude, longitude } = req.body;
 
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 20;
+
+    if (
+        !Number.isInteger(page) ||
+        page < 1 ||
+        !Number.isInteger(limit) ||
+        limit < 1 ||
+        limit > 100
+    ) {
+        return res.status(400).json({
+            mensagem: "Parâmetros de paginação inválidos."
+        });
+    }
+
     // ===============================
     // CAMPOS OBRIGATÓRIOS
     // ===============================
@@ -33,6 +48,8 @@ exports.buscar = (req, res) => {
 
     lat,
     lng,
+    page,
+    limit,
 
     (err, lojas) => {
 
@@ -48,10 +65,12 @@ exports.buscar = (req, res) => {
 
         geolocalizacaoModel.buscarProdutos(
 
-            lat,
-            lng,
+        lat,
+        lng,
+        page,
+        limit,
 
-            (err, produtos) => {
+        (err, produtos) => {
 
                 if (err) {
 
@@ -67,6 +86,8 @@ exports.buscar = (req, res) => {
 
                 lat,
                 lng,
+                page,
+                limit,
 
                 (err, servicos) => {
 

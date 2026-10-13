@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const agendaLojistaController = require('../Controllers/agendaLojistaController');
-const authMiddleware = require('../middlewares/authMiddleware');
+const authMiddleware = require('../Middlewares/authMiddleware');
 
 // Middleware de autentica��o
 router.use(authMiddleware);

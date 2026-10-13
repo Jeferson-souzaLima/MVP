@@ -4,6 +4,56 @@ exports.getAll = (callback) => {
     db.query('SELECT * FROM Lojas', callback);
 };
 
+exports.getPaginados = (page, limit, callback) => {
+
+    const offset = (page - 1) * limit;
+
+    const queryTotal = `
+        SELECT COUNT(*) AS total
+        FROM Lojas
+        WHERE ativo = 1
+    `;
+
+    db.query(queryTotal, (err, totalResults) => {
+
+        if (err) {
+            return callback(err);
+        }
+
+        const total = Number(totalResults[0].total);
+
+        const queryLojas = `
+            SELECT *
+            FROM Lojas
+            WHERE ativo = 1
+            ORDER BY id DESC
+            LIMIT ? OFFSET ?
+        `;
+
+        db.query(
+            queryLojas,
+            [limit, offset],
+            (err, results) => {
+
+                if (err) {
+                    return callback(err);
+                }
+
+                const temMais =
+                    offset + results.length < total;
+
+                callback(null, {
+                    dados: results,
+                    pagina: page,
+                    limite: limit,
+                    total,
+                    temMais
+                });
+            }
+        );
+    });
+};
+
 exports.create = (loja, callback) => {
     const { usuario_id, nome_fantasia, cnpj, descricao, cidade, uf, endereco, ativo, imagem } = loja;
     const query = `

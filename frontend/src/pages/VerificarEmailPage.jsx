@@ -1,3 +1,4 @@
+import { API_URL } from "@/services/apiUrl";
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
@@ -15,7 +16,7 @@ export default function VerificarEmailPage() {
       return;
     }
 
-    fetch(`http://localhost:3000/auth/confirmar-email?token=${encodeURIComponent(token)}`)
+    fetch(`${API_URL}/auth/confirmar-email?token=${encodeURIComponent(token)}`)
       .then(async (response) => {
         const data = await response.json();
         if (!response.ok) throw new Error(data.mensagem);

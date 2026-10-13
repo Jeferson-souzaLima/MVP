@@ -1,3 +1,4 @@
+import { API_URL } from "@/services/apiUrl";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -11,7 +12,7 @@ export default function MeusAgendamentosPage() {
   console.log("novoAgendamento:", novoAgendamento);
 
   useEffect(() => {
-    fetch("http://localhost:3000/agendamentos/meus", {
+    fetch(`${API_URL}/agendamentos/meus`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },

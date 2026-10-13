@@ -1,3 +1,4 @@
+import { API_URL } from "@/services/apiUrl";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -23,7 +24,7 @@ export default function RegisterPage() {
 
     setEnviando(true);
     try {
-      const response = await fetch("http://localhost:3000/auth/register", {
+      const response = await fetch(`${API_URL}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nome, email, senha, confirmacaoSenha }),

@@ -1,3 +1,4 @@
+import { API_URL } from "@/services/apiUrl";
 import { Package, Store, Scissors } from "lucide-react";
 
 export function SearchDropdown({
@@ -118,7 +119,7 @@ export function SearchDropdown({
                 const indice = indiceAtual++;
                 const imagemProduto =
                 produto.imagens?.[0]?.caminho
-                    ? `http://localhost:3000${produto.imagens[0].caminho}`
+                    ? `${API_URL}${produto.imagens[0].caminho}`
                     : "/images/produto-padrao.jpg";
 
                 return (
@@ -173,7 +174,7 @@ export function SearchDropdown({
               {lojas.map((loja) => {
                 const indice = indiceAtual++;
                 const logoLoja = loja.imagem
-                  ? `http://localhost:3000${loja.imagem}`
+                  ? `${API_URL}${loja.imagem}`
                   : "/images/loja-padrao.png";
 
                 return (
@@ -214,7 +215,7 @@ export function SearchDropdown({
               {servicos.map((servico) => {
                 const indice = indiceAtual++;
                 const logoLoja = servico.loja_logo
-                  ? `http://localhost:3000${servico.loja_logo}`
+                  ? `${API_URL}${servico.loja_logo}`
                   : "/images/loja-padrao.png";
 
                 return (

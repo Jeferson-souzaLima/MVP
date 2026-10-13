@@ -1,13 +1,20 @@
+import { API_URL } from "@/services/apiUrl";
 import axios from 'axios';
 
-const api = axios.create({ baseURL: 'http://localhost:3000' });
+const api = axios.create({ baseURL: `${API_URL}` });
 
 function authConfig(token) {
   return { headers: { Authorization: `Bearer ${token}` } };
 }
 
-export async function buscarLojas() {
-  const response = await api.get('/lojas');
+export async function buscarLojas(page = 1, limit = 20) {
+  const response = await api.get('/lojas', {
+    params: {
+      page,
+      limit
+    }
+  });
+
   return response.data;
 }
 

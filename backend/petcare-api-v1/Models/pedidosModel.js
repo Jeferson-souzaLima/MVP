@@ -270,3 +270,52 @@ exports.getMeusPedidosCompletos = (usuario_id, callback) => {
 
     db.query(query, [usuario_id], callback);
 };
+
+// Buscar pedidos completos da loja, incluindo os itens
+exports.getPedidosLojaCompletos = (loja_id, callback) => {
+    const query = `
+        SELECT
+            p.id,
+            p.usuario_id,
+            p.loja_id,
+            p.data_pedido,
+            p.status,
+            p.subtotal,
+            p.valor_entrega,
+            p.total,
+            p.modalidade_entrega,
+
+            p.nome_contato,
+            p.telefone_contato,
+
+            p.cep_entrega,
+            p.endereco_entrega,
+            p.numero_entrega,
+            p.complemento_entrega,
+            p.bairro_entrega,
+            p.cidade_entrega,
+            p.uf_entrega,
+
+            p.observacao,
+            p.reserva_expira_em,
+            p.cancelado_em,
+
+            i.id AS item_id,
+            i.tipo AS item_tipo,
+            i.item_id AS produto_id,
+            i.nome_item,
+            i.preco_unitario,
+            i.quantidade
+
+        FROM Pedidos p
+
+        INNER JOIN ItensPedido i
+            ON i.pedido_id = p.id
+
+        WHERE p.loja_id = ?
+
+        ORDER BY p.data_pedido DESC, p.id DESC
+    `;
+
+    db.query(query, [loja_id], callback);
+};

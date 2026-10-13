@@ -1,3 +1,4 @@
+import { API_URL } from "@/services/apiUrl";
 import { useNavigate } from "react-router-dom";
 import { FavoriteButton } from "../ui/FavoriteButton";
 
@@ -37,33 +38,31 @@ export function ServicoCard({
 
       {/* Cabeçalho */}
 
-      <div className="flex items-start justify-between">
+      <div className="flex items-start gap-3 pr-10">
 
-        <div className="flex-1 pr-3">
+      {/* Logo da loja */}
+      <div className="w-16 h-16 rounded-xl overflow-hidden border border-gray-200 bg-white shadow-sm flex items-center justify-center flex-shrink-0">
+        <img
+          src={
+            servico.loja_imagem
+              ? `${API_URL}${servico.loja_imagem}`
+              : "/images/loja-padrao.png"
+          }
+          alt={servico.loja_nome || "Logo da loja"}
+          className="w-full h-full object-contain p-2"
+        />
+      </div>
+
+      {/* Informações */}
+        <div className="flex-1 min-w-0">
 
           <h3 className="text-lg font-semibold text-gray-900 leading-tight">
             {servico.nome}
           </h3>
 
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 mt-1">
             {servico.loja_nome}
           </p>
-
-        </div>
-
-        <div className="w-16 h-16 rounded-xl overflow-hidden border border-gray-200 bg-white shadow-sm flex items-center justify-center flex-shrink-0">
-
-          {servico.loja_logo ? (
-            <img
-              src={`http://localhost:3000${servico.loja_logo}`}
-              alt={servico.loja_nome}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <span className="text-2xl">
-              🐾
-            </span>
-          )}
 
         </div>
 

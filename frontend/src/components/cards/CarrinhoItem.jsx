@@ -1,3 +1,4 @@
+import { API_URL } from "@/services/apiUrl";
 import { useCarrinho } from "../../context/CarrinhoContext";
 
 export default function CarrinhoItem({
@@ -22,7 +23,7 @@ export default function CarrinhoItem({
 
   const imagemProduto =
     item.imagem
-      ? `http://localhost:3000${item.imagem}`
+      ? `${API_URL}${item.imagem}`
       : "/images/produto-padrao.jpg";
 
   return (

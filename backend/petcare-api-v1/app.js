@@ -27,12 +27,20 @@ const cepRoutes = require('./Routes/cep');
 const app = express();
 
 // Configurações
+const corsOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
 app.use(cors({
-    origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+    origin: corsOrigins,
     credentials: true
 }));
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Health check usado pelo Render.
+app.get('/health', (_req, res) => res.status(200).json({ status: 'ok' }));
 
 // Rotas
 app.use('/usuarios', usuariosRoutes);

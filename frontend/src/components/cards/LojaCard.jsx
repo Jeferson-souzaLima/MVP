@@ -1,3 +1,4 @@
+import { API_URL } from "@/services/apiUrl";
 import { Link } from "react-router-dom";
 import { FavoriteButton } from "../ui/FavoriteButton";
 import { formatarDistancia } from "@/utils/formatarDistancia";
@@ -8,7 +9,7 @@ export function LojaCard({
 }) {
 
   const imagemUrl = loja.imagem
-    ? `http://localhost:3000${loja.imagem}`
+    ? `${API_URL}${loja.imagem}`
     : "/images/loja-padrao.jpg";
 
   return (

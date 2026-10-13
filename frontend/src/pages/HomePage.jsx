@@ -41,6 +41,16 @@ export default function HomePage() {
     const [modoBuscaProdutos, setModoBuscaProdutos] = useState("geral");
     const [modoBuscaServicos, setModoBuscaServicos] = useState("geral");
 
+    const [paginaProdutos, setPaginaProdutos] = useState(1);
+    const [temMaisProdutos, setTemMaisProdutos] = useState(false);
+    const [carregandoMaisProdutos, setCarregandoMaisProdutos] = useState(false);
+    const [paginaLojas, setPaginaLojas] = useState(1);
+    const [temMaisLojas, setTemMaisLojas] = useState(false);
+    const [carregandoMaisLojas, setCarregandoMaisLojas] = useState(false);
+    const [paginaServicos, setPaginaServicos] = useState(1);
+    const [temMaisServicos, setTemMaisServicos] = useState(false);
+    const [carregandoMaisServicos, setCarregandoMaisServicos] = useState(false);
+
     const [loadingDados, setLoadingDados] = useState(false);
 
     const {
@@ -60,6 +70,178 @@ export default function HomePage() {
 
     }, []);
 
+    const carregarMaisProdutos = useCallback(async () => {
+        if (
+            selectedCategory !== "produtos" ||
+            carregandoMaisProdutos ||
+            !temMaisProdutos
+        ) {
+            return;
+        }
+
+        try {
+            setCarregandoMaisProdutos(true);
+
+            const proximaPagina = paginaProdutos + 1;
+
+            let resultado;
+
+            if (
+                modoBuscaProdutos === "proximidade" &&
+                latitude &&
+                longitude
+            ) {
+                const data = await buscarConteudoPorLocalizacao(
+                    latitude,
+                    longitude,
+                    proximaPagina,
+                    20
+                );
+
+                resultado = data?.produtos;
+            } else {
+                resultado = await buscarProdutos(
+                    proximaPagina,
+                    20
+                );
+            }
+
+            const novosProdutos = resultado?.dados ?? [];
+
+            if (novosProdutos.length > 0) {
+                setProdutos((produtosAtuais) => [
+                    ...produtosAtuais,
+                    ...novosProdutos
+                ]);
+            }
+
+            setPaginaProdutos(
+                resultado?.pagina ?? proximaPagina
+            );
+
+            setTemMaisProdutos(
+                resultado?.temMais ?? false
+            );
+
+        } catch (error) {
+            console.error(
+                "Erro ao carregar mais produtos:",
+                error
+            );
+        } finally {
+            setCarregandoMaisProdutos(false);
+        }
+    }, [
+        selectedCategory,
+        carregandoMaisProdutos,
+        temMaisProdutos,
+        paginaProdutos,
+        modoBuscaProdutos,
+        latitude,
+        longitude
+    ]);
+
+    const carregarMaisLojas = useCallback(async () => {
+        if (
+            selectedCategory !== "lojas" ||
+            carregandoMaisLojas ||
+            !temMaisLojas
+        ) {
+            return;
+        }
+
+        try {
+            setCarregandoMaisLojas(true);
+
+            const proximaPagina = paginaLojas + 1;
+
+            let resultado;
+
+            if (
+                modoBusca === "proximidade" &&
+                latitude &&
+                longitude
+            ) {
+                const data = await buscarConteudoPorLocalizacao(
+                    latitude,
+                    longitude,
+                    proximaPagina,
+                    20
+                );
+
+                resultado = data?.lojas;
+            } else {
+                resultado = await buscarLojas(
+                    proximaPagina,
+                    20
+                );
+            }
+
+            const novasLojas = resultado?.dados ?? [];
+
+            if (novasLojas.length > 0) {
+                setLojas((lojasAtuais) => [
+                    ...(lojasAtuais ?? []),
+                    ...novasLojas
+                ]);
+            }
+
+            setPaginaLojas(
+                resultado?.pagina ?? proximaPagina
+            );
+
+            setTemMaisLojas(
+                resultado?.temMais ?? false
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Erro ao carregar mais lojas:",
+                error
+            );
+
+        } finally {
+
+            setCarregandoMaisLojas(false);
+
+        }
+    }, [
+        selectedCategory,
+        carregandoMaisLojas,
+        temMaisLojas,
+        paginaLojas,
+        modoBusca,
+        latitude,
+        longitude
+    ]);
+
+    const carregarMaisServicos = useCallback(async () => {
+        if (selectedCategory !== "servicos" || carregandoMaisServicos || !temMaisServicos) return;
+
+        try {
+            setCarregandoMaisServicos(true);
+            const proximaPagina = paginaServicos + 1;
+            let resultado;
+
+            if (modoBuscaServicos === "proximidade" && latitude && longitude) {
+                const data = await buscarConteudoPorLocalizacao(latitude, longitude, proximaPagina, 20);
+                resultado = data?.servicos;
+            } else {
+                resultado = await buscarServicos(proximaPagina, 20);
+            }
+
+            const novosServicos = resultado?.dados ?? [];
+            if (novosServicos.length) setServicos((atuais) => [...atuais, ...novosServicos]);
+            setPaginaServicos(resultado?.pagina ?? proximaPagina);
+            setTemMaisServicos(resultado?.temMais ?? false);
+        } catch (loadError) {
+            console.error("Erro ao carregar mais serviços:", loadError);
+        } finally {
+            setCarregandoMaisServicos(false);
+        }
+    }, [selectedCategory, carregandoMaisServicos, temMaisServicos, paginaServicos, modoBuscaServicos, latitude, longitude]);
+
     useEffect(() => {
 
         let isMounted = true;
@@ -72,48 +254,69 @@ export default function HomePage() {
 
                 if (selectedCategory === "produtos") {
 
-                    let dadosProdutos = [];
+                let dadosProdutos = [];
 
-                    if (latitude && longitude) {
+                if (latitude && longitude) {
 
-                        const data =
-                            await buscarConteudoPorLocalizacao(
-                                latitude,
-                                longitude
-                            );
+                    const data = await buscarConteudoPorLocalizacao(
+                        latitude,
+                        longitude
+                    );
 
-                        const produtosProximos =
-                            data?.produtos ?? [];
+                    const resultadoProximidade = data?.produtos;
 
-                        if (produtosProximos.length > 0) {
+                    const produtosProximos =
+                        resultadoProximidade?.dados ?? [];
 
-                            dadosProdutos = produtosProximos;
-                            setModoBuscaProdutos("proximidade");
+                    if (produtosProximos.length > 0) {
 
-                        } else {
+                        dadosProdutos = produtosProximos;
 
-                            dadosProdutos =
-                                await buscarProdutos();
+                        setPaginaProdutos(
+                            resultadoProximidade?.pagina ?? 1
+                        );
 
-                            setModoBuscaProdutos("geral");
+                        setTemMaisProdutos(
+                            resultadoProximidade?.temMais ?? false
+                        );
 
-                        }
+                        setModoBuscaProdutos("proximidade");
 
                     } else {
 
-                        dadosProdutos = await buscarProdutos();
+                        const resultado = await buscarProdutos(1, 20);
+
+                        dadosProdutos = resultado?.dados ?? [];
+
+                        setPaginaProdutos(
+                            resultado?.pagina ?? 1
+                        );
+
+                        setTemMaisProdutos(
+                            resultado?.temMais ?? false
+                        );
+
                         setModoBuscaProdutos("geral");
-
                     }
 
-                    if (isMounted) {
-                        setProdutos(dadosProdutos ?? []);
-                    }
+                } else {
 
-                    return;
+                    const resultado = await buscarProdutos(1, 20);
 
+                    dadosProdutos = resultado?.dados ?? [];
+
+                    setPaginaProdutos(resultado?.pagina ?? 1);
+                    setTemMaisProdutos(resultado?.temMais ?? false);
+
+                    setModoBuscaProdutos("geral");
                 }
 
+                if (isMounted) {
+                    setProdutos(dadosProdutos);
+                }
+
+                return;
+            }
                 if (selectedCategory === "lojas") {
 
                     if (geoLoading) {
@@ -128,32 +331,62 @@ export default function HomePage() {
                                 longitude
                             );
 
-                        if (data?.lojas?.length > 0) {
+                        const resultadoProximidade = data?.lojas;
+
+                        const lojasProximas =
+                            resultadoProximidade?.dados ?? [];
+
+                        if (lojasProximas.length > 0) {
 
                             if (isMounted) {
-                                setLojas(data.lojas);
+
+                                setLojas(lojasProximas);
+
+                                setPaginaLojas(
+                                    resultadoProximidade?.pagina ?? 1
+                                );
+
+                                setTemMaisLojas(
+                                    resultadoProximidade?.temMais ?? false
+                                );
+
                                 setModoBusca("proximidade");
                             }
 
                             return;
-
                         }
 
-                        const todasLojas = await buscarLojas();
+                        const resultado = await buscarLojas(1, 20);
 
                         if (isMounted) {
-                            setLojas(todasLojas);
+                            setLojas(resultado?.dados ?? []);
+
+                            setPaginaLojas(
+                                resultado?.pagina ?? 1
+                            );
+
+                            setTemMaisLojas(
+                                resultado?.temMais ?? false
+                            );
+
                             setModoBusca("todas_sem_resultado");
                         }
 
-                        return;
-
                     }
 
-                    const todasLojas = await buscarLojas();
+                    const resultado = await buscarLojas(1, 20);
 
                     if (isMounted) {
-                        setLojas(todasLojas);
+                        setLojas(resultado?.dados ?? []);
+
+                        setPaginaLojas(
+                            resultado?.pagina ?? 1
+                        );
+
+                        setTemMaisLojas(
+                            resultado?.temMais ?? false
+                        );
+
                         setModoBusca("todas_localizacao_desativada");
                     }
 
@@ -165,6 +398,12 @@ export default function HomePage() {
 
                     let dadosServicos = [];
 
+                    console.log("LOCALIZAÇÃO HOME:", {
+                        latitude,
+                        longitude,
+                        geoLoading
+                    });
+
                     if (latitude && longitude) {
 
                         const data =
@@ -173,24 +412,32 @@ export default function HomePage() {
                                 longitude
                             );
 
-                        const servicosProximos =
-                            data?.servicos ?? [];
+                        const resultadoProximidade = data?.servicos;
+                        const servicosProximos = resultadoProximidade?.dados ?? [];
 
                         if (servicosProximos.length > 0) {
 
                             dadosServicos = servicosProximos;
+                            setPaginaServicos(resultadoProximidade?.pagina ?? 1);
+                            setTemMaisServicos(resultadoProximidade?.temMais ?? false);
                             setModoBuscaServicos("proximidade");
 
                         } else {
 
-                            dadosServicos = await buscarServicos();
+                            const resultado = await buscarServicos(1, 20);
+                            dadosServicos = resultado?.dados ?? [];
+                            setPaginaServicos(resultado?.pagina ?? 1);
+                            setTemMaisServicos(resultado?.temMais ?? false);
                             setModoBuscaServicos("geral");
 
                         }
 
                     } else {
 
-                        dadosServicos = await buscarServicos();
+                        const resultado = await buscarServicos(1, 20);
+                        dadosServicos = resultado?.dados ?? [];
+                        setPaginaServicos(resultado?.pagina ?? 1);
+                        setTemMaisServicos(resultado?.temMais ?? false);
                         setModoBuscaServicos("geral");
 
                     }
@@ -266,7 +513,12 @@ export default function HomePage() {
                         selectedCategory === "produtos" &&
                         produtos && (
 
-                            <ProductSection produtos={produtos} />
+                            <ProductSection
+                                produtos={produtos}
+                                onCarregarMais={carregarMaisProdutos}
+                                temMais={temMaisProdutos}
+                                carregandoMais={carregandoMaisProdutos}
+                            />
 
                         )}
 
@@ -317,7 +569,12 @@ export default function HomePage() {
 
                         )}
 
-                        <LojaSection lojas={lojas} />
+                        <LojaSection
+                            lojas={lojas}
+                            onCarregarMais={carregarMaisLojas}
+                            temMais={temMaisLojas}
+                            carregandoMais={carregandoMaisLojas}
+                        />
 
                     </>
 
@@ -327,7 +584,12 @@ export default function HomePage() {
                         selectedCategory === "servicos" &&
                         servicos && (
 
-                            <ServicosSection servicos={servicos} />
+                            <ServicosSection
+                                servicos={servicos}
+                                onCarregarMais={carregarMaisServicos}
+                                temMais={temMaisServicos}
+                                carregandoMais={carregandoMaisServicos}
+                            />
 
                         )}
 

@@ -1,3 +1,4 @@
+import { API_URL } from "@/services/apiUrl";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useAuth } from "../../hooks/useAuth";
@@ -22,7 +23,7 @@ export default function ServicosLojistaPage() {
   });
 
   const api = axios.create({
-    baseURL: "http://localhost:3000",
+    baseURL: `${API_URL}`,
     headers: { Authorization: `Bearer ${token}` },
   });
 

@@ -1,3 +1,4 @@
+import { API_URL } from "@/services/apiUrl";
 import { useEffect, useRef, useState } from "react";
 import {
   Home,
@@ -13,6 +14,8 @@ import {
   Plus,
   ArrowRight,
   Check,
+  Heart,
+  CalendarDays,
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -122,7 +125,9 @@ export function MobileBottomNav() {
         setHistoricoBusca(historico);
       }
 
-      setMenuAberto(area);
+      setMenuAberto(
+        area === "busca" ? "explorar" : area
+      );
     }, 400);
   }
 
@@ -170,7 +175,7 @@ export function MobileBottomNav() {
       return;
     }
 
-    if (menuAberto === "busca") {
+    if (menuAberto === "explorar") {
       setMenuAberto(null);
       return;
     }
@@ -191,6 +196,26 @@ export function MobileBottomNav() {
     }
 
     navigate("/carrinho");
+  }
+
+  function handleContaClick() {
+    if (ignorarProximoClickRef.current) {
+      ignorarProximoClickRef.current = false;
+      longPressRef.current = false;
+      return;
+    }
+
+    if (menuAberto === "conta") {
+      setMenuAberto(null);
+      return;
+    }
+
+    navigate("/perfil");
+  }
+
+  function handleOpcaoConta(rota) {
+    setMenuAberto(null);
+    navigate(rota);
   }
 
   function handleOpcaoInicio(categoria) {
@@ -349,6 +374,7 @@ export function MobileBottomNav() {
             const isInicio = item.id === "inicio";
             const isBusca = item.id === "explorar";
             const isCarrinho = item.id === "carrinho";
+            const isConta = item.id === "conta";
 
             const menuDesteItem =
               menuAberto === item.id;
@@ -588,6 +614,99 @@ export function MobileBottomNav() {
                     </div>
                   )}
 
+                {/* MENU CONTA */}
+                {isConta && menuDesteItem && (
+                  <div
+                    className="
+                      absolute
+                      bottom-full
+                      left-1/2
+                      -translate-x-1/2
+                      w-[170px]
+                      mb-3
+                      bg-white
+                      border
+                      border-gray-200
+                      rounded-2xl
+                      shadow-xl
+                      overflow-hidden
+                      p-1
+                    "
+                  >
+                  
+                    <button
+                      type="button"
+                      onClick={() => handleOpcaoConta("/meus-pedidos")}
+                      className="
+                        w-full
+                        flex
+                        items-center
+                        gap-3
+                        px-3
+                        py-2.5
+                        rounded-xl
+                        text-gray-700
+                        font-semibold
+                        text-xs
+                        hover:bg-green-50
+                        hover:text-[#0E5617]
+                        transition-colors
+                      "
+                    >
+                      <Package className="w-4 h-4" />
+                      <span>Meus pedidos</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleOpcaoConta("/meus-agendamentos")
+                      }
+                      className="
+                        w-full
+                        flex
+                        items-center
+                        gap-3
+                        px-3
+                        py-2.5
+                        rounded-xl
+                        text-gray-700
+                        font-semibold
+                        text-xs
+                        hover:bg-green-50
+                        hover:text-[#0E5617]
+                        transition-colors
+                      "
+                    >
+                      <CalendarDays className="w-4 h-4" />
+                      <span>Meus agendamentos</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleOpcaoConta("/favoritos")}
+                      className="
+                        w-full
+                        flex
+                        items-center
+                        gap-3
+                        px-3
+                        py-2.5
+                        rounded-xl
+                        text-gray-700
+                        font-semibold
+                        text-xs
+                        hover:bg-green-50
+                        hover:text-[#0E5617]
+                        transition-colors
+                      "
+                    >
+                      <Heart className="w-4 h-4" />
+                      <span>Favoritos</span>
+                    </button>
+                  </div>
+                )} 
+
                 {/* MINI CARRINHO */}
                 {isCarrinho &&
                   menuDesteItem && (
@@ -634,7 +753,7 @@ export function MobileBottomNav() {
                             {carrinho.itens.map(
                               (item) => {
                                 const imagem = item.imagem
-                                  ? `http://localhost:3000${item.imagem}`
+                                  ? `${API_URL}${item.imagem}`
                                   : "/images/produto-padrao.jpg";
 
                                 return (
@@ -867,12 +986,15 @@ export function MobileBottomNav() {
                         ? handleBuscaClick
                         : isCarrinho
                           ? handleCarrinhoClick
-                          : item.onClick
+                          : isConta
+                            ? handleContaClick
+                            : item.onClick
                   }
                   onPointerDown={
                     isInicio ||
                     isBusca ||
-                    isCarrinho
+                    isCarrinho ||
+                    isConta
                       ? (event) =>
                           iniciarPressao(
                             event,
@@ -880,37 +1002,44 @@ export function MobileBottomNav() {
                               ? "inicio"
                               : isBusca
                                 ? "busca"
-                                : "carrinho"
+                                : isCarrinho
+                                  ? "carrinho"
+                                  : "conta"
                           )
                       : undefined
                   }
                   onPointerMove={
                     isInicio ||
                     isBusca ||
-                    isCarrinho
+                    isCarrinho ||
+                    isConta
                       ? verificarMovimento
                       : undefined
                   }
+
                   onPointerUp={
                     isInicio ||
                     isBusca ||
-                    isCarrinho
+                    isCarrinho ||
+                    isConta
                       ? finalizarPressao
                       : undefined
                   }
+
                   onPointerCancel={
                     isInicio ||
                     isBusca ||
-                    isCarrinho
+                    isCarrinho ||
+                    isConta
                       ? finalizarPressao
                       : undefined
                   }
                   onContextMenu={
                     isInicio ||
                     isBusca ||
-                    isCarrinho
-                      ? (event) =>
-                          event.preventDefault()
+                    isCarrinho ||
+                    isConta
+                      ? (event) => event.preventDefault()
                       : undefined
                   }
                   aria-label={item.label}
@@ -959,7 +1088,8 @@ export function MobileBottomNav() {
                   {/* PROGRESSO DO LONG PRESS */}
                   {(isInicio ||
                     isBusca ||
-                    isCarrinho) && (
+                    isCarrinho ||
+                    isConta) && (
                     <span
                       className="
                         absolute

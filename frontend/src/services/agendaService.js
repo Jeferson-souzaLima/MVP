@@ -1,6 +1,5 @@
+import { API_URL } from "@/services/apiUrl";
 import axios from "axios";
-
-const API_URL = "http://localhost:3000";
 
 // ===============================
 // Buscar agendamentos do lojista por data

@@ -1,3 +1,4 @@
+import { API_URL } from "@/services/apiUrl";
 import { useEffect, useState } from "react";
 import { FaArrowLeft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
@@ -29,7 +30,7 @@ export default function ConfiguracoesAgendaPage() {
       const token = localStorage.getItem("token");
 
       const configResponse = await fetch(
-        "http://localhost:3000/agenda-lojista/config",
+        `${API_URL}/agenda-lojista/config`,
         {
           headers: {
             Authorization: `Bearer ${token}`
@@ -44,7 +45,7 @@ export default function ConfiguracoesAgendaPage() {
       const configData = await configResponse.json();
 
       const disponibilidadeResponse = await fetch(
-        "http://localhost:3000/agenda-lojista/disponibilidade",
+        `${API_URL}/agenda-lojista/disponibilidade`,
         {
           headers: {
             Authorization: `Bearer ${token}`
@@ -110,7 +111,7 @@ export default function ConfiguracoesAgendaPage() {
       }
 
       const configResponse = await fetch(
-        "http://localhost:3000/agenda-lojista/config",
+        `${API_URL}/agenda-lojista/config`,
         {
           method: "POST",
           headers: {
@@ -135,7 +136,7 @@ export default function ConfiguracoesAgendaPage() {
       }
 
       const deleteResponse = await fetch(
-        "http://localhost:3000/agenda-lojista/disponibilidade/loja",
+        `${API_URL}/agenda-lojista/disponibilidade/loja`,
         {
           method: "DELETE",
           headers: {
@@ -153,7 +154,7 @@ export default function ConfiguracoesAgendaPage() {
 
       for (const dia of config.disponibilidade.filter((d) => d.ativo)) {
         const response = await fetch(
-          "http://localhost:3000/agenda-lojista/disponibilidade",
+          `${API_URL}/agenda-lojista/disponibilidade`,
           {
             method: "POST",
             headers: {

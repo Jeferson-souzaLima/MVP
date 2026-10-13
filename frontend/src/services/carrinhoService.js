@@ -1,4 +1,5 @@
-const API = "http://localhost:3000";
+import { API_URL } from "@/services/apiUrl";
+const API = `${API_URL}`;
 
 export async function buscarCarrinho(token) {
   const res = await fetch(`${API}/pedidos/carrinho`, {

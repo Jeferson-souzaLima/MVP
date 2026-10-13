@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-
 import { ProductCard } from "@/components/cards/ProductCard";
 import { LojaSection } from "@/components/sections/LojaSection";
 import { ServicosSection } from "@/components/sections/ServicosSection";
+import { Footer } from "@/components/layout/Footer";
 
 import {
   buscarResultados,
@@ -111,7 +111,8 @@ export default function ResultadosBuscaPage() {
     servicos.length;
 
   return (
-    <main className="max-w-7xl mx-auto px-4 py-8">
+    <div className="bg-[#EBE9E9] min-h-screen flex flex-col">
+      <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-8">
 
       {/* Cabeçalho */}
 
@@ -280,6 +281,9 @@ export default function ResultadosBuscaPage() {
         </div>
       )}
 
-    </main>
+        </main>
+
+    <Footer />
+  </div>
   );
 }

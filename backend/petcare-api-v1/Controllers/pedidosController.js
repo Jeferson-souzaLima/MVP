@@ -1,6 +1,9 @@
 const pedidosModel = require('../Models/pedidosModel');
 const db = require('../db');
-const { criarPedidoReservado } = require('../Services/pedidoCheckoutService');
+const {
+    criarPedidoReservado,
+    calcularFrete
+} = require('../Services/pedidoCheckoutService');
 const MercadoPagoService = require('../Services/mercadoPagoService');
 const PagamentosModel = require('../Models/pagamentosModel');
 
@@ -98,18 +101,87 @@ exports.getPedidosLoja = (req, res) => {
     const usuario = req.usuario;
 
     if (usuario.tipo !== 'lojista') {
-        return res.status(403).json({ mensagem: 'Acesso permitido apenas para lojistas.' });
+        return res.status(403).json({
+            mensagem: 'Acesso permitido apenas para lojistas.'
+        });
     }
 
     if (!usuario.loja_id) {
-        return res.status(400).json({ mensagem: 'Loja n�o identificada no token.' });
+        return res.status(400).json({
+            mensagem: 'Loja não identificada no token.'
+        });
     }
 
-    const query = 'SELECT * FROM Pedidos WHERE loja_id = ?';
-    pedidosModel.getByFilters(query, [usuario.loja_id], (err, results) => {
-        if (err) return res.status(500).send(err);
-        res.json(results);
-    });
+    pedidosModel.getPedidosLojaCompletos(
+        usuario.loja_id,
+        (err, resultados) => {
+            if (err) {
+                console.error(
+                    'Erro ao buscar pedidos da loja:',
+                    err
+                );
+
+                return res.status(500).json({
+                    mensagem: 'Não foi possível carregar os pedidos.'
+                });
+            }
+
+            const pedidos = {};
+
+            resultados.forEach((item) => {
+                if (!pedidos[item.id]) {
+                    pedidos[item.id] = {
+                        id: item.id,
+                        usuario_id: item.usuario_id,
+                        loja_id: item.loja_id,
+                        data_pedido: item.data_pedido,
+                        status: item.status,
+
+                        subtotal: Number(item.subtotal),
+                        valor_entrega: Number(item.valor_entrega),
+                        total: Number(item.total),
+
+                        modalidade_entrega:
+                            item.modalidade_entrega,
+
+                        nome_contato: item.nome_contato,
+                        telefone_contato: item.telefone_contato,
+
+                        cep_entrega: item.cep_entrega,
+                        endereco_entrega: item.endereco_entrega,
+                        numero_entrega: item.numero_entrega,
+                        complemento_entrega:
+                            item.complemento_entrega,
+                        bairro_entrega: item.bairro_entrega,
+                        cidade_entrega: item.cidade_entrega,
+                        uf_entrega: item.uf_entrega,
+
+                        observacao: item.observacao,
+
+                        reserva_expira_em:
+                            item.reserva_expira_em,
+
+                        cancelado_em:
+                            item.cancelado_em,
+
+                        itens: []
+                    };
+                }
+
+                pedidos[item.id].itens.push({
+                    item_id: item.item_id,
+                    tipo: item.item_tipo,
+                    produto_id: item.produto_id,
+                    nome_item: item.nome_item,
+                    preco_unitario:
+                        Number(item.preco_unitario),
+                    quantidade: item.quantidade
+                });
+            });
+
+            return res.json(Object.values(pedidos));
+        }
+    );
 };
 
 // ===============================
@@ -246,15 +318,56 @@ exports.cancelarPeloCliente = (req, res) => {
     });
 };
 
+exports.calcularFrete = async (req, res) => {
+    try {
+        const { loja_id, latitude, longitude } = req.body;
+
+        const resultado = await calcularFrete({
+            lojaId: loja_id,
+            latitude,
+            longitude
+        });
+
+        return res.json(resultado);
+
+    } catch (erro) {
+        console.error('Erro ao calcular frete:', erro);
+
+        return res.status(erro.status || 500).json({
+            mensagem:
+                erro.message ||
+                'Não foi possível calcular o frete.'
+        });
+    }
+};
+
 exports.checkout = async (req, res) => {
     try {
         const pedido = await criarPedidoReservado({ usuarioId: req.usuario.id, dados: req.body });
+        const itensMercadoPago = pedido.itens.map(item => ({
+            id: String(item.id),
+            title: item.nome,
+            quantity: item.quantidade,
+            currency_id: 'BRL',
+            unit_price: Number(item.preco)
+        }));
+
+        if (Number(pedido.frete) > 0) {
+            itensMercadoPago.push({
+                id: `frete:${pedido.pedidoId}`,
+                title: 'Frete',
+                quantity: 1,
+                currency_id: 'BRL',
+                unit_price: Number(pedido.frete)
+            });
+        }
+
         const preference = await MercadoPagoService.criarPreferencia({
             titulo: `Pedido PetCare Connect #${pedido.pedidoId}`,
             valor: pedido.total,
             referencia_id: pedido.pedidoId,
             referencia_externa: `pedido:${pedido.pedidoId}`,
-            itens: pedido.itens.map(item => ({ id: String(item.id), title: item.nome, quantity: item.quantidade, currency_id: 'BRL', unit_price: item.preco }))
+            itens: itensMercadoPago
         });
         PagamentosModel.create({ tipo_referencia: 'pedido', referencia_id: pedido.pedidoId, gateway: 'mercado_pago', gateway_preference_id: preference.id, status: 'pendente', valor: pedido.total }, (erro, resultado) => {
             if (erro) return res.status(500).json({ mensagem: 'Pedido reservado, mas n�o foi poss�vel registrar o pagamento.' });

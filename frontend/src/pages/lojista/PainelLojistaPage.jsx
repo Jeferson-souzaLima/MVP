@@ -7,6 +7,7 @@ import {
   FaRegCalendarAlt,
   FaHeadset,
   FaSignOutAlt,
+  FaBox,
 } from "react-icons/fa";
 import { useAuth } from "../../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -64,6 +65,13 @@ export default function PainelLojistaPage() {
           onClick={() => navigate("/lojista/servicos")}
         />
 
+        <ActionCard
+          icon={<FaBox />}
+          title="Pedidos"
+          description="Visualizar e gerenciar seus pedidos"
+          onClick={() => navigate("/lojista/pedidos")}
+        />
+          
         <ActionCard
           icon={<FaRegCalendarAlt />}
           title="Agenda"

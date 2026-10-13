@@ -1,6 +1,16 @@
-import axios from 'axios';
+import { API_URL } from "@/services/apiUrl";
+import axios from "axios";
 
-export async function buscarProdutos() {
-  const response = await axios.get('http://localhost:3000/produtos');
-  return response.data;
+export async function buscarProdutos(page = 1, limit = 20) {
+    const response = await axios.get(
+        `${API_URL}/produtos`,
+        {
+            params: {
+                page,
+                limit
+            }
+        }
+    );
+
+    return response.data;
 }

@@ -26,6 +26,36 @@ exports.getAll = (callback) => {
     db.query(sql, callback);
 };
 
+exports.getPaginados = (page, limit, callback) => {
+    const offset = (page - 1) * limit;
+
+    db.query('SELECT COUNT(*) AS total FROM Servicos s INNER JOIN Lojas l ON l.id = s.loja_id WHERE s.ativo = 1 AND l.ativo = 1', (countErr, countResults) => {
+        if (countErr) return callback(countErr);
+
+        const total = Number(countResults[0].total);
+        const sql = `
+            SELECT s.id, s.loja_id, s.nome, s.descricao, s.preco, s.duracao_min, s.ativo,
+                   l.nome_fantasia AS loja_nome, l.imagem AS loja_imagem
+            FROM Servicos s
+            INNER JOIN Lojas l ON l.id = s.loja_id
+            WHERE s.ativo = 1 AND l.ativo = 1
+            ORDER BY s.id DESC
+            LIMIT ? OFFSET ?
+        `;
+
+        db.query(sql, [limit, offset], (err, results) => {
+            if (err) return callback(err);
+            callback(null, {
+                dados: results,
+                pagina: page,
+                limite: limit,
+                total,
+                temMais: offset + results.length < total
+            });
+        });
+    });
+};
+
 exports.getById = (id, callback) => {
     db.query('SELECT * FROM Servicos WHERE id = ?', [id], (err, results) => {
         if (err) return callback(err);

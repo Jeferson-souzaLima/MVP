@@ -38,6 +38,132 @@ exports.getAll = (callback) => {
 
 //
 // ===============================
+// LISTAR PRODUTOS PAGINADOS (HOME)
+// DISTRIBUÍDOS ENTRE LOJAS
+// ===============================
+exports.getPaginados = (page, limit, callback) => {
+
+    const offset = (page - 1) * limit;
+
+    // 1. Conta os produtos válidos do catálogo público
+    const queryTotal = `
+        SELECT COUNT(*) AS total
+        FROM Produtos p
+        INNER JOIN Lojas l
+            ON l.id = p.loja_id
+        WHERE
+            p.ativo = 1
+            AND l.ativo = 1
+    `;
+
+    db.query(queryTotal, (err, totalResults) => {
+
+        if (err) {
+            return callback(err);
+        }
+
+        const total = Number(totalResults[0].total);
+
+        // 2. Primeiro seleciona e pagina os produtos.
+        // 3. Depois busca as imagens desses produtos.
+        const queryProdutos = `
+            WITH produtos_ordenados AS (
+
+                SELECT
+                    p.id AS produto_id,
+                    p.nome AS produto_nome,
+                    p.descricao,
+                    p.preco,
+                    p.estoque,
+                    p.ativo,
+
+                    l.id AS loja_id,
+                    l.nome_fantasia AS loja_nome,
+                    l.imagem AS loja_logo,
+
+                    ROW_NUMBER() OVER (
+                        PARTITION BY l.id
+                        ORDER BY p.id DESC
+                    ) AS ordem_na_loja
+
+                FROM Produtos p
+
+                INNER JOIN Lojas l
+                    ON l.id = p.loja_id
+
+                WHERE
+                    p.ativo = 1
+                    AND l.ativo = 1
+            ),
+
+            produtos_paginados AS (
+
+                SELECT *
+                FROM produtos_ordenados
+
+                ORDER BY
+                    ordem_na_loja ASC,
+                    loja_id ASC,
+                    produto_id DESC
+
+                LIMIT ? OFFSET ?
+            )
+
+            SELECT
+                pp.produto_id,
+                pp.produto_nome,
+                pp.descricao,
+                pp.preco,
+                pp.estoque,
+                pp.ativo,
+
+                pp.loja_id,
+                pp.loja_nome,
+                pp.loja_logo,
+
+                pi.id AS imagem_id,
+                pi.caminho AS imagem_caminho,
+                pi.principal AS imagem_principal
+
+            FROM produtos_paginados pp
+
+            LEFT JOIN ProdutoImagens pi
+                ON pi.produto_id = pp.produto_id
+
+            ORDER BY
+                pp.ordem_na_loja ASC,
+                pp.loja_id ASC,
+                pp.produto_id DESC
+        `;
+
+        db.query(
+            queryProdutos,
+            [limit, offset],
+            (err, results) => {
+
+                if (err) {
+                    return callback(err);
+                }
+
+                const produtos = agruparProdutos(results);
+
+                const temMais =
+                    offset + produtos.length < total;
+
+                callback(null, {
+                    dados: produtos,
+                    pagina: page,
+                    limite: limit,
+                    total,
+                    temMais
+                });
+            }
+        );
+    });
+};
+
+//
+// ===============================
 // BUSCAR POR ID
 // ===============================
 exports.getById = (id, callback) => {

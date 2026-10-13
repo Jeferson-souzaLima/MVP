@@ -1,7 +1,8 @@
+import { API_URL } from "@/services/apiUrl";
 import axios from "axios";
 
 export const api = axios.create({
-  baseURL: "http://localhost:3000", // Altere depois para URL em produção
+  baseURL: `${API_URL}`, // Altere depois para URL em produção
 });
 
 api.interceptors.request.use((config) => {

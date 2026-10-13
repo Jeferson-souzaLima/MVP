@@ -8,39 +8,19 @@ const {
 exports.buscarLojas = (
     latitude,
     longitude,
+    page = 1,
+    limit = LIMITE_RESULTADOS,
     callback
 ) => {
 
-    const sql = `
-        SELECT
+    const offset = (page - 1) * limit;
 
-            id,
-            nome_fantasia,
-            cidade,
-            uf,
-            endereco,
-            imagem,
-            latitude,
-            longitude,
+    // ===============================
+    // CONTAR LOJAS DENTRO DO RAIO
+    // ===============================
+    const queryTotal = `
 
-            (
-                6371 *
-                ACOS(
-                    COS(RADIANS(?))
-                    *
-                    COS(RADIANS(latitude))
-                    *
-                    COS(
-                        RADIANS(longitude)
-                        -
-                        RADIANS(?)
-                    )
-                    +
-                    SIN(RADIANS(?))
-                    *
-                    SIN(RADIANS(latitude))
-                )
-            ) AS distancia
+        SELECT COUNT(*) AS total
 
         FROM Lojas
 
@@ -52,16 +32,31 @@ exports.buscarLojas = (
 
             AND longitude IS NOT NULL
 
-        HAVING distancia <= ?
+            AND (
+                6371 *
+                ACOS(
 
-        ORDER BY distancia ASC
+                    COS(RADIANS(?))
+                    *
+                    COS(RADIANS(latitude))
+                    *
+                    COS(
+                        RADIANS(longitude)
+                        - RADIANS(?)
+                    )
+                    +
+                    SIN(RADIANS(?))
+                    *
+                    SIN(RADIANS(latitude))
 
-        LIMIT ${LIMITE_RESULTADOS}
+                )
+            ) <= ?
+
     `;
 
     db.query(
 
-        sql,
+        queryTotal,
 
         [
             latitude,
@@ -70,7 +65,113 @@ exports.buscarLojas = (
             RAIO_PADRAO_KM
         ],
 
-        callback
+        (erro, totalResults) => {
+
+            if (erro) {
+                return callback(erro);
+            }
+
+            const total = Number(totalResults[0].total);
+
+            // ===============================
+            // BUSCAR LOJAS DA PÁGINA
+            // ===============================
+            const sql = `
+
+                SELECT
+
+                    id,
+                    nome_fantasia,
+                    cidade,
+                    uf,
+                    endereco,
+                    imagem,
+                    latitude,
+                    longitude,
+
+                    (
+                        6371 *
+                        ACOS(
+
+                            COS(RADIANS(?))
+                            *
+                            COS(RADIANS(latitude))
+                            *
+                            COS(
+                                RADIANS(longitude)
+                                - RADIANS(?)
+                            )
+                            +
+                            SIN(RADIANS(?))
+                            *
+                            SIN(RADIANS(latitude))
+
+                        )
+                    ) AS distancia
+
+                FROM Lojas
+
+                WHERE
+
+                    ativo = 1
+
+                    AND latitude IS NOT NULL
+
+                    AND longitude IS NOT NULL
+
+                HAVING distancia <= ?
+
+                ORDER BY
+
+                    distancia ASC,
+
+                    id DESC
+
+                LIMIT ? OFFSET ?
+
+            `;
+
+            db.query(
+
+                sql,
+
+                [
+                    latitude,
+                    longitude,
+                    latitude,
+                    RAIO_PADRAO_KM,
+                    limit,
+                    offset
+                ],
+
+                (erro, resultados) => {
+
+                    if (erro) {
+                        return callback(erro);
+                    }
+
+                    const temMais =
+                        offset + resultados.length < total;
+
+                    callback(null, {
+
+                        dados: resultados,
+
+                        pagina: page,
+
+                        limite: limit,
+
+                        total,
+
+                        temMais
+
+                    });
+
+                }
+
+            );
+
+        }
 
     );
 
@@ -79,119 +180,270 @@ exports.buscarLojas = (
 exports.buscarProdutos = (
     latitude,
     longitude,
+    page = 1,
+    limit = LIMITE_RESULTADOS,
     callback
 ) => {
 
-    const sql = `
+    const offset = (page - 1) * limit;
 
-    SELECT
+    // ===============================
+    // CONTAR PRODUTOS DISPONÍVEIS
+    // ===============================
+    const queryTotal = `
 
-        p.id AS produto_id,
-        p.nome AS produto_nome,
-        p.descricao,
-        p.preco,
-        p.estoque,
-        p.ativo,
+        SELECT COUNT(*) AS total
 
-        l.id AS loja_id,
-        l.nome_fantasia AS loja_nome,
-        l.imagem AS loja_logo,
+        FROM Produtos p
 
-        pi.id AS imagem_id,
-        pi.caminho AS imagem_caminho,
-        pi.principal AS imagem_principal,
+        INNER JOIN Lojas l
+            ON l.id = p.loja_id
 
-        (
+        WHERE
 
-            6371 *
-            ACOS(
+            p.ativo = 1
 
-                COS(RADIANS(?))
-                *
-                COS(RADIANS(l.latitude))
-                *
-                COS(
-                    RADIANS(l.longitude)
-                    -
-                    RADIANS(?)
+            AND l.ativo = 1
+
+            AND l.latitude IS NOT NULL
+
+            AND l.longitude IS NOT NULL
+
+            AND (
+                6371 *
+                ACOS(
+
+                    COS(RADIANS(?))
+                    *
+                    COS(RADIANS(l.latitude))
+                    *
+                    COS(
+                        RADIANS(l.longitude)
+                        - RADIANS(?)
+                    )
+                    +
+                    SIN(RADIANS(?))
+                    *
+                    SIN(RADIANS(l.latitude))
+
                 )
-                +
-                SIN(RADIANS(?))
-                *
-                SIN(RADIANS(l.latitude))
+            ) <= ?
 
-            )
-
-        ) AS distancia
-
-    FROM Produtos p
-
-    INNER JOIN Lojas l
-        ON l.id = p.loja_id
-
-    LEFT JOIN ProdutoImagens pi
-        ON pi.produto_id = p.id
-
-    WHERE
-
-    p.ativo = 1
-
-    AND l.ativo = 1
-
-    AND l.latitude IS NOT NULL
-
-    AND l.longitude IS NOT NULL
-
-    HAVING distancia <= ?
-
-    ORDER BY
-
-    distancia ASC,
-
-    p.id DESC
-
-    LIMIT ?
-`;
+    `;
 
     db.query(
 
-    sql,
+        queryTotal,
 
-    [
+        [
+            latitude,
+            longitude,
+            latitude,
+            RAIO_PADRAO_KM
+        ],
 
-        latitude,
-        longitude,
-        latitude,
+        (erro, totalResults) => {
 
-        RAIO_PADRAO_KM,
-        LIMITE_RESULTADOS
+            if (erro) {
+                return callback(erro);
+            }
 
-    ],
+            const total = Number(totalResults[0].total);
 
-    (erro, resultados) => {
+            // ===============================
+            // BUSCAR PRODUTOS DISTRIBUÍDOS
+            // ENTRE AS LOJAS
+            // ===============================
+            const sql = `
 
-        if (erro) {
+                SELECT
 
-            return callback(erro);
+                    produtos_selecionados.produto_id,
+                    produtos_selecionados.produto_nome,
+                    produtos_selecionados.descricao,
+                    produtos_selecionados.preco,
+                    produtos_selecionados.estoque,
+                    produtos_selecionados.ativo,
+
+                    produtos_selecionados.loja_id,
+                    produtos_selecionados.loja_nome,
+                    produtos_selecionados.loja_logo,
+
+                    produtos_selecionados.distancia,
+
+                    pi.id AS imagem_id,
+                    pi.caminho AS imagem_caminho,
+                    pi.principal AS imagem_principal
+
+                FROM (
+
+                    SELECT
+
+                        p.id AS produto_id,
+                        p.nome AS produto_nome,
+                        p.descricao,
+                        p.preco,
+                        p.estoque,
+                        p.ativo,
+
+                        l.id AS loja_id,
+                        l.nome_fantasia AS loja_nome,
+                        l.imagem AS loja_logo,
+
+                        (
+                            6371 *
+                            ACOS(
+
+                                COS(RADIANS(?))
+                                *
+                                COS(RADIANS(l.latitude))
+                                *
+                                COS(
+                                    RADIANS(l.longitude)
+                                    - RADIANS(?)
+                                )
+                                +
+                                SIN(RADIANS(?))
+                                *
+                                SIN(RADIANS(l.latitude))
+
+                            )
+                        ) AS distancia,
+
+                        ROW_NUMBER() OVER (
+
+                            PARTITION BY l.id
+
+                            ORDER BY p.id DESC
+
+                        ) AS ordem_na_loja
+
+                    FROM Produtos p
+
+                    INNER JOIN Lojas l
+                        ON l.id = p.loja_id
+
+                    WHERE
+
+                        p.ativo = 1
+
+                        AND l.ativo = 1
+
+                        AND l.latitude IS NOT NULL
+
+                        AND l.longitude IS NOT NULL
+
+                ) AS produtos_selecionados
+
+                LEFT JOIN ProdutoImagens pi
+                    ON pi.produto_id =
+                       produtos_selecionados.produto_id
+
+                WHERE
+
+                    produtos_selecionados.distancia <= ?
+
+                ORDER BY
+
+                    produtos_selecionados.ordem_na_loja ASC,
+
+                    produtos_selecionados.distancia ASC,
+
+                    produtos_selecionados.loja_id ASC,
+
+                    produtos_selecionados.produto_id DESC
+
+                LIMIT ? OFFSET ?
+
+            `;
+
+            db.query(
+
+                sql,
+
+                [
+                    latitude,
+                    longitude,
+                    latitude,
+                    RAIO_PADRAO_KM,
+                    limit,
+                    offset
+                ],
+
+                (erro, resultados) => {
+
+                    if (erro) {
+                        return callback(erro);
+                    }
+
+                    const produtos =
+                        agruparProdutos(resultados);
+
+                    const temMais =
+                        offset + produtos.length < total;
+
+                    callback(null, {
+
+                        dados: produtos,
+
+                        pagina: page,
+
+                        limite: limit,
+
+                        total,
+
+                        temMais
+
+                    });
+
+                }
+
+            );
 
         }
 
-        callback(
-            null,
-            agruparProdutos(resultados)
-        );
-
-    }
-
-);
+    );
 
 };
 
 exports.buscarServicos = (
     latitude,
     longitude,
+    page = 1,
+    limit = LIMITE_RESULTADOS,
     callback
 ) => {
+
+    const offset = (page - 1) * limit;
+
+    const distanciaSql = `
+        (6371 * ACOS(
+            COS(RADIANS(?)) * COS(RADIANS(l.latitude)) *
+            COS(RADIANS(l.longitude) - RADIANS(?)) +
+            SIN(RADIANS(?)) * SIN(RADIANS(l.latitude))
+        ))
+    `;
+
+    const whereSql = `
+        FROM Servicos s
+        INNER JOIN Lojas l ON l.id = s.loja_id
+        WHERE s.ativo = 1 AND l.ativo = 1
+            AND l.latitude IS NOT NULL AND l.longitude IS NOT NULL
+        HAVING distancia <= ?
+    `;
+
+    const countSql = `
+        SELECT COUNT(*) AS total
+        FROM (
+            SELECT s.id, ${distanciaSql} AS distancia
+            ${whereSql}
+        ) AS servicos_proximos
+    `;
+
+    db.query(countSql, [latitude, longitude, latitude, RAIO_PADRAO_KM], (err, totalResults) => {
+        if (err) return callback(err);
+
+        const total = Number(totalResults[0].total);
 
     const sql = `
 
@@ -254,7 +506,7 @@ exports.buscarServicos = (
 
             s.id DESC
 
-        LIMIT ?
+        LIMIT ? OFFSET ?
 
     `;
 
@@ -269,13 +521,25 @@ exports.buscarServicos = (
             latitude,
 
             RAIO_PADRAO_KM,
-            LIMITE_RESULTADOS
+            limit,
+            offset
 
         ],
 
-        callback
+        (queryErr, results) => {
+            if (queryErr) return callback(queryErr);
+            callback(null, {
+                dados: results,
+                pagina: page,
+                limite: limit,
+                total,
+                temMais: offset + results.length < total
+            });
+        }
 
     );
+
+    });
 
 };
 

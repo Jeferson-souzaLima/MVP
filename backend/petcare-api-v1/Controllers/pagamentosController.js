@@ -116,79 +116,401 @@ exports.iniciarPagamentoPedido = (req, res) => {
             });
         }
 
-        PagamentosModel.getByReferencia(
-            'pedido',
-            pedido.id,
-            (err, pagamentosExistentes) => {
+        const processarPagamentoInterno = (pagamentoInterno) => {
+
+            if (!pagamentoInterno) {
+
+                console.error(
+                    'Nenhum pagamento interno encontrado:',
+                    {
+                        gateway_payment_id:
+                            pagamentoMercadoPago.id,
+
+                        tipo_referencia:
+                            tipoReferencia,
+
+                        referencia_id:
+                            referenciaId
+                    }
+                );
+
+                return res.sendStatus(200);
+            }
+
+            console.log(
+                'Pagamento interno encontrado:',
+                pagamentoInterno
+            );
+
+            const valorEsperado =
+                Number(pagamentoInterno.valor);
+
+            if (
+                !Number.isFinite(valorPagoMercadoPago) ||
+                !Number.isFinite(valorEsperado) ||
+                Math.abs(valorPagoMercadoPago - valorEsperado) > 0.01
+            ) {
+
+                console.error(
+                    'Valor do pagamento divergente:',
+                    {
+                        pagamento_id:
+                            pagamentoInterno.id,
+
+                        referencia_id:
+                            pagamentoInterno.referencia_id,
+
+                        valor_esperado:
+                            valorEsperado,
+
+                        valor_pago:
+                            valorPagoMercadoPago,
+
+                        gateway_payment_id:
+                            pagamentoMercadoPago.id
+                    }
+                );
+
+                return res.sendStatus(200);
+            }
+
+            /*
+            * Converte os status do Mercado Pago
+            * para os status aceitos pelo banco.
+            */
+            let novoStatus = null;
+
+            switch (statusMercadoPago) {
+
+                case 'approved':
+                    novoStatus = 'aprovado';
+                    break;
+
+                case 'rejected':
+                    novoStatus = 'recusado';
+                    break;
+
+                case 'cancelled':
+                    novoStatus = 'cancelado';
+                    break;
+
+                case 'expired':
+                    novoStatus = 'expirado';
+                    break;
+
+                case 'pending':
+                case 'in_process':
+                case 'in_mediation':
+                    novoStatus = 'pendente';
+                    break;
+
+                default:
+
+                    console.warn(
+                        'Status Mercado Pago não mapeado:',
+                        statusMercadoPago
+                    );
+
+                    return res.sendStatus(200);
+            }
+
+            /*
+            * Primeiro salvamos o ID real do pagamento
+            * gerado pelo Mercado Pago.
+            */
+            PagamentosModel.updateGatewayPaymentId(
+                pagamentoInterno.id,
+                String(pagamentoMercadoPago.id),
+                (err) => {
+
+                    if (err) {
+
+                        console.error(
+                            'Erro ao salvar gateway_payment_id:',
+                            err
+                        );
+
+                        return res.sendStatus(200);
+                    }
+
+                    /*
+                    * Depois atualizamos o status.
+                    */
+                    PagamentosModel.updateStatus(
+                        pagamentoInterno.id,
+                        novoStatus,
+                        (err) => {
+
+                            if (err) {
+
+                                console.error(
+                                    'Erro ao atualizar status do pagamento:',
+                                    err
+                                );
+
+                                return res.sendStatus(200);
+                            }
+
+                            console.log(
+                                'Pagamento atualizado com sucesso:',
+                                {
+                                    pagamento_id:
+                                        pagamentoInterno.id,
+
+                                    gateway_payment_id:
+                                        pagamentoMercadoPago.id,
+
+                                    status:
+                                        novoStatus
+                                }
+                            );
+
+                            if (
+                                pagamentoInterno.tipo_referencia ===
+                                'pedido'
+                            ) {
+
+                                if (novoStatus === 'aprovado') {
+
+                                    return PedidosModel.confirmarPagamento(
+                                        pagamentoInterno.referencia_id,
+                                        (erro, resultado) => {
+
+                                            if (erro) {
+
+                                                console.error(
+                                                    'Erro ao confirmar pedido após pagamento:',
+                                                    erro
+                                                );
+
+                                            }
+
+                                            if (
+                                                !erro &&
+                                                resultado.affectedRows === 0
+                                            ) {
+
+                                                console.warn(
+                                                    'Pedido não confirmado: reserva expirada ou status incompatível.',
+                                                    pagamentoInterno.referencia_id
+                                                );
+                                            }
+
+                                            return res.sendStatus(200);
+                                        }
+                                    );
+                                }
+
+                                return res.sendStatus(200);
+                            }
+
+                            if (
+                                pagamentoInterno.tipo_referencia ===
+                                'agendamento'
+                            ) {
+
+                                /*
+                                * Pagamento aprovado
+                                * → confirma o agendamento.
+                                */
+                                if (novoStatus === 'aprovado') {
+
+                                    AgendamentosModel.atualizarStatus(
+                                        pagamentoInterno.referencia_id,
+                                        'confirmado',
+                                        (err) => {
+
+                                            if (err) {
+
+                                                console.error(
+                                                    'Erro ao confirmar agendamento após pagamento:',
+                                                    err
+                                                );
+
+                                                return res.sendStatus(200);
+                                            }
+
+                                            console.log(
+                                                'Agendamento confirmado após pagamento:',
+                                                pagamentoInterno.referencia_id
+                                            );
+
+                                            return res.sendStatus(200);
+                                        }
+                                    );
+
+                                    return;
+                                }
+
+                                /*
+                                * Pagamento cancelado ou expirado
+                                * → cancela o agendamento.
+                                */
+                                if (
+                                    novoStatus === 'cancelado' ||
+                                    novoStatus === 'expirado'
+                                ) {
+
+                                    AgendamentosModel.atualizarStatus(
+                                        pagamentoInterno.referencia_id,
+                                        'cancelado',
+                                        (err) => {
+
+                                            if (err) {
+
+                                                console.error(
+                                                    'Erro ao cancelar agendamento após pagamento:',
+                                                    err
+                                                );
+
+                                                return res.sendStatus(200);
+                                            }
+
+                                            console.log(
+                                                'Agendamento cancelado após pagamento:',
+                                                {
+                                                    agendamento_id:
+                                                        pagamentoInterno.referencia_id,
+
+                                                    motivo:
+                                                        novoStatus
+                                                }
+                                            );
+
+                                            return res.sendStatus(200);
+                                        }
+                                    );
+
+                                    return;
+                                }
+
+                                /*
+                                * rejected → pagamento recusado.
+                                *
+                                * O agendamento permanece
+                                * aguardando_pagamento para permitir
+                                * uma nova tentativa.
+                                *
+                                * pending / in_process / in_mediation
+                                * também não alteram o agendamento.
+                                */
+
+                                return res.sendStatus(200);
+                            }
+
+                            return res.sendStatus(200);
+                        }
+                    );
+                }
+            );
+        };
+
+        /*
+        * Primeiro tentamos localizar pelo ID real
+        * do pagamento do Mercado Pago.
+        */
+        PagamentosModel.getByGatewayPaymentId(
+            String(pagamentoMercadoPago.id),
+            (err, pagamentoPorGateway) => {
 
                 if (err) {
+
                     console.error(
-                        'Erro ao verificar pagamento existente:',
+                        'Erro ao localizar pagamento pelo gateway_payment_id:',
                         err
                     );
 
-                    return res.status(500).json({
-                        mensagem: 'Erro ao verificar pagamento.'
-                    });
+                    return res.sendStatus(200);
                 }
 
-                const pagamentoPendente =
-                    pagamentosExistentes.find(
-                        pagamento =>
-                            pagamento.status === 'pendente'
+                /*
+                * Se já existe associação, usamos exatamente
+                * esse pagamento interno.
+                */
+                if (pagamentoPorGateway) {
+
+                    return processarPagamentoInterno(
+                        pagamentoPorGateway
                     );
-
-                if (pagamentoPendente) {
-                    return res.status(409).json({
-                        mensagem: 'Este pedido já possui um pagamento pendente.',
-                        pagamento_id: pagamentoPendente.id
-                    });
                 }
 
-                MercadoPagoService.criarPreferencia({
-                    titulo: `Pedido PetCare Connect #${pedido.id}`,
-                    valor: pedido.total,
-                    referencia_id: pedido.id,
-                    referencia_externa: `pedido:${pedido.id}`
-                }).then((preference) => PagamentosModel.create(
-                    {
-                        tipo_referencia: 'pedido',
-                        referencia_id: pedido.id,
-                        gateway: 'mercado_pago',
-                        gateway_preference_id: preference.id,
-                        gateway_payment_id: null,
-                        status: 'pendente',
-                        valor: pedido.total
-                    },
-                    (err, result) => {
+                /*
+                * Primeiro webhook desse payment_id.
+                *
+                * Como ainda não temos associação pelo gateway,
+                * usamos a referência para encontrar o pagamento
+                * pendente que será associado.
+                */
+                PagamentosModel.getByReferencia(
+                    tipoReferencia,
+                    referenciaId,
+                    (err, pagamentos) => {
 
                         if (err) {
+
                             console.error(
-                                'Erro ao criar pagamento:',
+                                'Erro ao localizar pagamento interno:',
                                 err
                             );
 
-                            return res.status(500).json({
-                                mensagem: 'Erro ao criar pagamento.'
-                            });
+                            return res.sendStatus(200);
                         }
 
-                        return res.status(201).json({
-                            mensagem: 'Pagamento iniciado com sucesso.',
-                            pagamento_id: result.insertId,
-                            pedido_id: pedido.id,
-                            valor: pedido.total,
-                            status: 'pendente',
-                            preference_id: preference.id,
-                            checkout_url: preference.init_point
-                        });
+                        if (
+                            !pagamentos ||
+                            pagamentos.length === 0
+                        ) {
 
+                            console.error(
+                                'Nenhum pagamento interno encontrado para:',
+                                {
+                                    tipo_referencia:
+                                        tipoReferencia,
+
+                                    referencia_id:
+                                        referenciaId
+                                }
+                            );
+
+                            return res.sendStatus(200);
+                        }
+
+                        /*
+                        * Somente um pagamento pendente ainda não
+                        * associado a outro payment_id pode receber
+                        * esta associação.
+                        */
+                        const pagamentoPendente =
+                            pagamentos.find(
+                                pagamento =>
+                                    pagamento.status === 'pendente' &&
+                                    !pagamento.gateway_payment_id
+                            );
+
+                        if (!pagamentoPendente) {
+
+                            console.error(
+                                'Nenhum pagamento pendente disponível para associar ao payment_id:',
+                                {
+                                    gateway_payment_id:
+                                        pagamentoMercadoPago.id,
+
+                                    tipo_referencia:
+                                        tipoReferencia,
+
+                                    referencia_id:
+                                        referenciaId
+                                }
+                            );
+
+                            return res.sendStatus(200);
+                        }
+
+                        return processarPagamentoInterno(
+                            pagamentoPendente
+                        );
                     }
-                )).catch((error) => {
-                    console.error('Erro ao criar preferência de pedido:', error);
-                    return res.status(502).json({ mensagem: 'Não foi possível iniciar o pagamento.' });
-                });
-
+                );
             }
         );
 
@@ -433,6 +755,9 @@ exports.webhook = async (req, res) => {
         const externalReference =
             pagamentoMercadoPago.external_reference;
 
+        const valorPagoMercadoPago =
+            Number(pagamentoMercadoPago.transaction_amount);
+
         console.log(
             'Status Mercado Pago:',
             statusMercadoPago
@@ -518,6 +843,28 @@ exports.webhook = async (req, res) => {
                     'Pagamento interno encontrado:',
                     pagamentoInterno
                 );
+
+                const valorEsperado =
+                    Number(pagamentoInterno.valor);
+
+                if (
+                    !Number.isFinite(valorPagoMercadoPago) ||
+                    !Number.isFinite(valorEsperado) ||
+                    Math.abs(valorPagoMercadoPago - valorEsperado) > 0.01
+                ) {
+                    console.error(
+                        'Valor do pagamento divergente:',
+                        {
+                            pagamento_id: pagamentoInterno.id,
+                            referencia_id: pagamentoInterno.referencia_id,
+                            valor_esperado: valorEsperado,
+                            valor_pago: valorPagoMercadoPago,
+                            gateway_payment_id: pagamentoMercadoPago.id
+                        }
+                    );
+
+                    return res.sendStatus(200);
+                }
 
                 /*
                  * Converte os status do Mercado Pago

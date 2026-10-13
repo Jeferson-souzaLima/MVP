@@ -1,3 +1,4 @@
+import { API_URL } from "@/services/apiUrl";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useAuth } from "../../hooks/useAuth";
@@ -25,7 +26,7 @@ export default function ProdutosLojistaPage() {
   const [imagensExistentes, setImagensExistentes] = useState([]);
 
   const api = axios.create({
-    baseURL: "http://localhost:3000",
+    baseURL: `${API_URL}`,
     headers: { Authorization: `Bearer ${token}` },
   });
 
@@ -262,7 +263,7 @@ export default function ProdutosLojistaPage() {
                 <img
                   src={
                     produto.imagens?.[0]?.caminho
-                      ? `http://localhost:3000${produto.imagens[0].caminho}`
+                      ? `${API_URL}${produto.imagens[0].caminho}`
                       : "/images/produto-padrao.jpg"
                   }
                   alt={produto.nome}
@@ -384,7 +385,7 @@ export default function ProdutosLojistaPage() {
                           className="relative"
                         >
                           <img
-                            src={`http://localhost:3000${imagem.caminho}`}
+                            src={`${API_URL}${imagem.caminho}`}
                             alt="Imagem do produto"
                             className="w-full h-24 rounded-xl object-cover"
                           />

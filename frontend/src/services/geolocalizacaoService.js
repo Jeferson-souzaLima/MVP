@@ -2,7 +2,9 @@ import api from "./api";
 
 export async function buscarConteudoPorLocalizacao(
     latitude,
-    longitude
+    longitude,
+    page = 1,
+    limit = 20
 ) {
 
     const token = localStorage.getItem("token");
@@ -17,6 +19,11 @@ export async function buscarConteudoPorLocalizacao(
         },
 
         {
+            params: {
+                page,
+                limit
+            },
+
             headers: {
                 Authorization: `Bearer ${token}`
             }

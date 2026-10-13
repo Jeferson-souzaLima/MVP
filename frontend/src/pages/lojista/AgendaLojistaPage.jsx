@@ -1,3 +1,4 @@
+import { API_URL } from "@/services/apiUrl";
 import { useState, useMemo, useEffect } from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
@@ -29,7 +30,7 @@ export default function AgendaLojistaPage() {
         .split("T")[0];
 
       const response = await fetch(
-        `http://localhost:3000/agendamentos/lojista/datas-confirmadas?data_inicial=${dataInicial}&data_final=${dataFinal}`,
+        `${API_URL}/agendamentos/lojista/datas-confirmadas?data_inicial=${dataInicial}&data_final=${dataFinal}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`
@@ -97,7 +98,7 @@ export default function AgendaLojistaPage() {
     try {
 
       const response = await fetch(
-        `http://localhost:3000/agendamentos/${id}/status`,
+        `${API_URL}/agendamentos/${id}/status`,
         {
           method: "PUT",
           headers: {
@@ -138,7 +139,7 @@ export default function AgendaLojistaPage() {
     try {
 
       const response = await fetch(
-        `http://localhost:3000/agendamentos/${id}`,
+        `${API_URL}/agendamentos/${id}`,
         {
           method: "DELETE",
           headers: {
@@ -170,7 +171,7 @@ export default function AgendaLojistaPage() {
       const dataFormatada = date.toISOString().split("T")[0];
 
       const response = await fetch(
-        `http://localhost:3000/agendamentos/lojista?data=${dataFormatada}`,
+        `${API_URL}/agendamentos/lojista?data=${dataFormatada}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`
@@ -201,7 +202,7 @@ export default function AgendaLojistaPage() {
   useEffect(() => {
     const buscarServicos = async () => {
       try {
-        const response = await fetch("http://localhost:3000/servicos/meus", {
+        const response = await fetch(`${API_URL}/servicos/meus`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`
           }
@@ -222,7 +223,7 @@ export default function AgendaLojistaPage() {
 
   const buscarHorarios = async (data) => {
     const response = await fetch(
-      `http://localhost:3000/agenda/horarios?data=${data}&loja_id=1`
+      `${API_URL}/agenda/horarios?data=${data}&loja_id=1`
     );
 
     const horarios = await response.json();
@@ -244,7 +245,7 @@ export default function AgendaLojistaPage() {
     };
 
     const response = await fetch(
-      "http://localhost:3000/agendamentos/manual",
+      `${API_URL}/agendamentos/manual`,
       {
         method: "POST",
         headers: {

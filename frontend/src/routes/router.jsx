@@ -31,6 +31,7 @@ import DadosLojaPage from "../pages/lojista/DadosLojaPage";
 import AjudaSuportePage from "../pages/lojista/AjudaSuportePage";
 import AnunciosPage from "../pages/lojista/AnunciosPage";
 import RelatoriosPage from "../pages/lojista/RelatoriosPage";
+import MeusPedidosLojistaPage from "../pages/lojista/MeusPedidosPage";
 
 // ProteÃƒÂ§ÃƒÂ£o
 import PrivateRoute from "../components/navigation/PrivateRoute";
@@ -126,6 +127,14 @@ export const router = createBrowserRouter([
         element: (
           <PrivateRoute role="lojista">
             <PainelLojistaPage />
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/lojista/pedidos",
+        element: (
+          <PrivateRoute role="lojista">
+            <MeusPedidosLojistaPage />
           </PrivateRoute>
         ),
       },
