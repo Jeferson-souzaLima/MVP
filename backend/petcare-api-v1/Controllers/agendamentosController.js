@@ -12,7 +12,7 @@ exports.criarAgendamento = (req, res) => {
 
     if (!servico_id) {
         return res.status(400).json({
-            message: 'Serviço é obrigatório.'
+            message: 'Serviï¿½o ï¿½ obrigatï¿½rio.'
         });
     }
 
@@ -24,39 +24,39 @@ exports.criarAgendamento = (req, res) => {
 
     if (!data_inicio) {
         return res.status(400).json({
-            message: 'Selecione uma data e horário.'
+            message: 'Selecione uma data e horï¿½rio.'
         });
     }
 
     const inicio = new Date(data_inicio);
 
     if (isNaN(inicio.getTime())) {
-        return res.status(400).json({ message: 'Data inválida.' });
+        return res.status(400).json({ message: 'Data invï¿½lida.' });
     }
 
-    // ?? Não permitir passado
+    // ?? Nï¿½o permitir passado
     if (inicio < new Date()) {
-        return res.status(400).json({ message: 'Não é possível agendar no passado.' });
+        return res.status(400).json({ message: 'Nï¿½o ï¿½ possï¿½vel agendar no passado.' });
     }
 
-    // 1?? Buscar serviço
+    // 1?? Buscar serviï¿½o
     Servicos.getById(servico_id, (err, servico) => {
 
         if (err) return res.status(500).json({ error: err });
         if (!servico || servico.ativo !== 1) {
-            return res.status(404).json({ message: 'Serviço inválido ou inativo.' });
+            return res.status(404).json({ message: 'Serviï¿½o invï¿½lido ou inativo.' });
         }
 
         const loja_id = servico.loja_id;
         const duracao = servico.duracao_min;
         const fim = new Date(inicio.getTime() + duracao * 60000);
 
-        // 2?? Buscar configuração da agenda
+        // 2?? Buscar configuraï¿½ï¿½o da agenda
         AgendaConfig.getByLojaId(loja_id, (err, config) => {
 
             if (err) return res.status(500).json({ error: err });
             if (!config) {
-                return res.status(400).json({ message: 'Agenda não configurada para esta loja.' });
+                return res.status(400).json({ message: 'Agenda nï¿½o configurada para esta loja.' });
             }
 
             // ?? Regra dias_limite_agendamento
@@ -65,7 +65,7 @@ exports.criarAgendamento = (req, res) => {
 
             if (inicio > limite) {
                 return res.status(400).json({
-                    message: `Agendamentos permitidos apenas para os próximos ${config.dias_limite_agendamento} dias.`
+                    message: `Agendamentos permitidos apenas para os prï¿½ximos ${config.dias_limite_agendamento} dias.`
                 });
             }
 
@@ -73,11 +73,11 @@ exports.criarAgendamento = (req, res) => {
             const minutos = inicio.getMinutes();
             if (minutos % config.intervalo_minutos !== 0) {
                 return res.status(400).json({
-                    message: `Horários permitidos de ${config.intervalo_minutos} em ${config.intervalo_minutos} minutos.`
+                    message: `Horï¿½rios permitidos de ${config.intervalo_minutos} em ${config.intervalo_minutos} minutos.`
                 });
             }
 
-            // 3?? Validar disponibilidade (se não for 24h)
+            // 3?? Validar disponibilidade (se nï¿½o for 24h)
             const validarDisponibilidade = (callback) => {
 
                 if (config.trabalha_24h === 1) {
@@ -90,7 +90,7 @@ exports.criarAgendamento = (req, res) => {
 
                     if (err) return res.status(500).json({ error: err });
                     if (!horarios || horarios.length === 0) {
-                        return res.status(400).json({ message: 'Loja não atende neste dia.' });
+                        return res.status(400).json({ message: 'Loja nï¿½o atende neste dia.' });
                     }
 
                     const horaInicio = inicio.toTimeString().slice(0, 5);
@@ -101,7 +101,7 @@ exports.criarAgendamento = (req, res) => {
                     });
 
                     if (!dentroDoHorario) {
-                        return res.status(400).json({ message: 'Horário fora do expediente.' });
+                        return res.status(400).json({ message: 'Horï¿½rio fora do expediente.' });
                     }
 
                     callback();
@@ -116,7 +116,7 @@ exports.criarAgendamento = (req, res) => {
                     if (err) return res.status(500).json({ error: err });
 
                     if (bloqueado) {
-                        return res.status(400).json({ message: 'Horário bloqueado pela loja.' });
+                        return res.status(400).json({ message: 'Horï¿½rio bloqueado pela loja.' });
                     }
 
                     // 5?? Validar capacidade
@@ -128,7 +128,7 @@ exports.criarAgendamento = (req, res) => {
 
                         if (total >= config.capacidade_por_horario) {
                             return res.status(400).json({
-                                message: 'Horário não disponível.'
+                                message: 'Horï¿½rio nï¿½o disponï¿½vel.'
                             });
                         }
 
@@ -156,7 +156,7 @@ exports.criarAgendamento = (req, res) => {
 
                             if (!cliente_nome_externo) {
                                 return res.status(400).json({
-                                    message: 'Nome do cliente é obrigatório para agendamento manual.'
+                                    message: 'Nome do cliente ï¿½ obrigatï¿½rio para agendamento manual.'
                                 });
                             }
 
@@ -197,7 +197,7 @@ exports.getAgendamentosDoLojista = (req, res) => {
     }
 
     if (!data) {
-        return res.status(400).json({ message: 'Data é obrigatória.' });
+        return res.status(400).json({ message: 'Data ï¿½ obrigatï¿½ria.' });
     }
 
     // 1?? Buscar loja do lojista
@@ -210,7 +210,7 @@ exports.getAgendamentosDoLojista = (req, res) => {
 
             if (!lojas.length) {
                 return res.status(404).json({
-                    message: 'Loja não encontrada.'
+                    message: 'Loja nï¿½o encontrada.'
                 });
             }
 
@@ -259,7 +259,7 @@ exports.getAgendamentoPorId = (req, res) => {
         (err, results) => {
             if (err) return res.status(500).json({ error: err });
             if (!results.length) {
-                return res.status(404).json({ message: 'Agendamento não encontrado.' });
+                return res.status(404).json({ message: 'Agendamento nï¿½o encontrado.' });
             }
 
             res.json(results[0]);
@@ -284,13 +284,13 @@ exports.atualizarStatus = (req, res) => {
 
     if (!status) {
         return res.status(400).json({
-            message: 'Status é obrigatório.'
+            message: 'Status ï¿½ obrigatï¿½rio.'
         });
     }
 
     if (!statusPermitidos.includes(status)) {
         return res.status(400).json({
-            message: 'Status inválido.'
+            message: 'Status invï¿½lido.'
         });
     }
 
@@ -311,7 +311,7 @@ exports.atualizarStatus = (req, res) => {
 
             if (!lojas.length) {
                 return res.status(404).json({
-                    message: 'Loja não encontrada.'
+                    message: 'Loja nï¿½o encontrada.'
                 });
             }
 
@@ -327,7 +327,7 @@ exports.atualizarStatus = (req, res) => {
 
                     if (!agendamentos.length) {
                         return res.status(404).json({
-                            message: 'Agendamento não encontrado.'
+                            message: 'Agendamento nï¿½o encontrado.'
                         });
                     }
 
@@ -358,7 +358,7 @@ exports.atualizarStatus = (req, res) => {
 
                     if (!transicoes.includes(status)) {
                         return res.status(400).json({
-                            message: `Não é possível alterar um agendamento de '${statusAtual}' para '${status}'.`
+                            message: `Nï¿½o ï¿½ possï¿½vel alterar um agendamento de '${statusAtual}' para '${status}'.`
                         });
                     }
 
@@ -405,12 +405,12 @@ exports.deletarAgendamento = (req, res) => {
 
             if (err) return res.status(500).json({ error: err });
             if (!lojas || lojas.length === 0) {
-                return res.status(404).json({ message: 'Loja não encontrada.' });
+                return res.status(404).json({ message: 'Loja nï¿½o encontrada.' });
             }
 
             const loja_id = lojas[0].id;
 
-            // Verificar se agendamento pertence à loja
+            // Verificar se agendamento pertence ï¿½ loja
             db.query(
                 'SELECT * FROM agendamentos WHERE id = ? AND loja_id = ?',
                 [id, loja_id],
@@ -420,7 +420,7 @@ exports.deletarAgendamento = (req, res) => {
 
                     if (!agendamentos || agendamentos.length === 0) {
                         return res.status(404).json({
-                            message: 'Agendamento não encontrado.'
+                            message: 'Agendamento nï¿½o encontrado.'
                         });
                     }
 
@@ -469,24 +469,24 @@ exports.criarAgendamentoManual = (req, res) => {
 
     if (!servico_id || !data_inicio || !cliente_nome_externo) {
         return res.status(400).json({
-            message: 'Serviço, data e nome do cliente são obrigatórios.'
+            message: 'Serviï¿½o, data e nome do cliente sï¿½o obrigatï¿½rios.'
         });
     }
 
     const inicio = new Date(data_inicio);
 
     if (isNaN(inicio.getTime())) {
-        return res.status(400).json({ message: 'Data inválida.' });
+        return res.status(400).json({ message: 'Data invï¿½lida.' });
     }
 
     // Loja do lojista
     const loja_id = usuario.loja_id;
 
     if (!loja_id) {
-        return res.status(403).json({ message: 'Loja não identificada.' });
+        return res.status(403).json({ message: 'Loja nï¿½o identificada.' });
     }
 
-    // Buscar serviço
+    // Buscar serviï¿½o
     db.query(
         'SELECT * FROM servicos WHERE id = ? AND loja_id = ?',
         [servico_id, loja_id],
@@ -494,7 +494,7 @@ exports.criarAgendamentoManual = (req, res) => {
 
             if (err) return res.status(500).json({ error: err });
             if (!servicos || servicos.length === 0) {
-                return res.status(404).json({ message: 'Serviço não encontrado para esta loja.' });
+                return res.status(404).json({ message: 'Serviï¿½o nï¿½o encontrado para esta loja.' });
             }
 
             const servico = servicos[0];
@@ -549,7 +549,7 @@ exports.editarAgendamentoManual = (req, res) => {
 
             if (err) return res.status(500).json({ error: err });
             if (!lojas || lojas.length === 0) {
-                return res.status(404).json({ message: 'Loja não encontrada.' });
+                return res.status(404).json({ message: 'Loja nï¿½o encontrada.' });
             }
 
             const loja_id = lojas[0].id;
@@ -562,15 +562,15 @@ exports.editarAgendamentoManual = (req, res) => {
 
                     if (err) return res.status(500).json({ error: err });
                     if (!agendamentos || agendamentos.length === 0) {
-                        return res.status(404).json({ message: 'Agendamento não encontrado.' });
+                        return res.status(404).json({ message: 'Agendamento nï¿½o encontrado.' });
                     }
 
                     const agendamento = agendamentos[0];
 
-                    // Só permitir editar agendamento criado pelo lojista
+                    // Sï¿½ permitir editar agendamento criado pelo lojista
                     if (agendamento.criado_por !== 'lojista') {
                         return res.status(400).json({
-                            message: 'Só é possível editar agendamentos criados manualmente.'
+                            message: 'Sï¿½ ï¿½ possï¿½vel editar agendamentos criados manualmente.'
                         });
                     }
 
@@ -580,7 +580,7 @@ exports.editarAgendamentoManual = (req, res) => {
                     if (data_inicio) {
                         novoInicio = new Date(data_inicio);
                         if (isNaN(novoInicio.getTime())) {
-                            return res.status(400).json({ message: 'Data inválida.' });
+                            return res.status(400).json({ message: 'Data invï¿½lida.' });
                         }
 
                         const duracaoMin = (agendamento.data_fim - agendamento.data_inicio) / 60000;
@@ -690,7 +690,7 @@ exports.cancelarAgendamentoCliente = (req, res) => {
 
         if (!resultados.length) {
             return res.status(404).json({
-                message: "Agendamento não encontrado."
+                message: "Agendamento nï¿½o encontrado."
             });
         }
 
@@ -699,21 +699,21 @@ exports.cancelarAgendamentoCliente = (req, res) => {
         // Verifica se pertence ao cliente
         if (agendamento.cliente_id !== usuario.id) {
             return res.status(403).json({
-                message: "Você não pode cancelar este agendamento."
+                message: "Vocï¿½ nï¿½o pode cancelar este agendamento."
             });
         }
 
         // Verifica status
         if (!['aguardando_pagamento', 'confirmado'].includes(agendamento.status)) {
             return res.status(400).json({
-                message: "Este agendamento não pode mais ser cancelado."
+                message: "Este agendamento nï¿½o pode mais ser cancelado."
             });
         }
 
-        // Verifica se o horário já começou
+        // Verifica se o horï¿½rio jï¿½ comeï¿½ou
         if (new Date(agendamento.data_inicio) <= new Date()) {
             return res.status(400).json({
-                message: "O horário do atendimento já começou."
+                message: "O horï¿½rio do atendimento jï¿½ comeï¿½ou."
             });
         }
 

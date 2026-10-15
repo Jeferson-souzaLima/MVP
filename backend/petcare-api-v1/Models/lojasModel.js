@@ -1,7 +1,7 @@
 const db = require('../db');
 
 exports.getAll = (callback) => {
-    db.query('SELECT * FROM Lojas', callback);
+    db.query('SELECT * FROM lojas', callback);
 };
 
 exports.getPaginados = (page, limit, callback) => {
@@ -10,7 +10,7 @@ exports.getPaginados = (page, limit, callback) => {
 
     const queryTotal = `
         SELECT COUNT(*) AS total
-        FROM Lojas
+        FROM lojas
         WHERE ativo = 1
     `;
 
@@ -24,7 +24,7 @@ exports.getPaginados = (page, limit, callback) => {
 
         const queryLojas = `
             SELECT *
-            FROM Lojas
+            FROM lojas
             WHERE ativo = 1
             ORDER BY id DESC
             LIMIT ? OFFSET ?
@@ -57,7 +57,7 @@ exports.getPaginados = (page, limit, callback) => {
 exports.create = (loja, callback) => {
     const { usuario_id, nome_fantasia, cnpj, descricao, cidade, uf, endereco, ativo, imagem } = loja;
     const query = `
-        INSERT INTO Lojas (usuario_id, nome_fantasia, cnpj, descricao, cidade, uf, endereco, ativo, imagem)
+        INSERT INTO lojas (usuario_id, nome_fantasia, cnpj, descricao, cidade, uf, endereco, ativo, imagem)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
     const values = [usuario_id, nome_fantasia, cnpj, descricao, cidade, uf, endereco, ativo, imagem];
@@ -67,7 +67,7 @@ exports.create = (loja, callback) => {
 exports.update = (id, dados, callback) => {
     const { nome_fantasia, cnpj, descricao, cidade, uf, endereco, ativo, imagem } = dados;
     const sql = `
-        UPDATE Lojas 
+        UPDATE lojas
         SET nome_fantasia = ?, cnpj = ?, descricao = ?, cidade = ?, uf = ?, endereco = ?, ativo = ?, imagem = ?
         WHERE id = ?
     `;
@@ -75,7 +75,7 @@ exports.update = (id, dados, callback) => {
 };
 
 exports.delete = (id, callback) => {
-    db.query('DELETE FROM Lojas WHERE id = ?', [id], callback);
+    db.query('DELETE FROM lojas WHERE id = ?', [id], callback);
 };
 
 //
@@ -85,7 +85,7 @@ exports.delete = (id, callback) => {
 exports.existePorId = (id, callback) => {
     const sql = `
         SELECT id
-        FROM Lojas
+        FROM lojas
         WHERE id = ?
         LIMIT 1
     `;

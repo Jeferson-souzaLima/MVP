@@ -15,8 +15,8 @@ exports.getAll = (callback) => {
             l.nome_fantasia AS loja_nome,
             l.imagem AS loja_imagem
 
-        FROM Servicos s
-        INNER JOIN Lojas l
+        FROM servicos s
+        INNER JOIN lojas l
             ON l.id = s.loja_id
 
         WHERE s.ativo = 1
@@ -29,15 +29,15 @@ exports.getAll = (callback) => {
 exports.getPaginados = (page, limit, callback) => {
     const offset = (page - 1) * limit;
 
-    db.query('SELECT COUNT(*) AS total FROM Servicos s INNER JOIN Lojas l ON l.id = s.loja_id WHERE s.ativo = 1 AND l.ativo = 1', (countErr, countResults) => {
+    db.query('SELECT COUNT(*) AS total FROM servicos s INNER JOIN lojas l ON l.id = s.loja_id WHERE s.ativo = 1 AND l.ativo = 1', (countErr, countResults) => {
         if (countErr) return callback(countErr);
 
         const total = Number(countResults[0].total);
         const sql = `
             SELECT s.id, s.loja_id, s.nome, s.descricao, s.preco, s.duracao_min, s.ativo,
                    l.nome_fantasia AS loja_nome, l.imagem AS loja_imagem
-            FROM Servicos s
-            INNER JOIN Lojas l ON l.id = s.loja_id
+            FROM servicos s
+            INNER JOIN lojas l ON l.id = s.loja_id
             WHERE s.ativo = 1 AND l.ativo = 1
             ORDER BY s.id DESC
             LIMIT ? OFFSET ?
@@ -57,20 +57,20 @@ exports.getPaginados = (page, limit, callback) => {
 };
 
 exports.getById = (id, callback) => {
-    db.query('SELECT * FROM Servicos WHERE id = ?', [id], (err, results) => {
+    db.query('SELECT * FROM servicos WHERE id = ?', [id], (err, results) => {
         if (err) return callback(err);
         callback(null, results[0]); // retorna s� 1 servi�o
     });
 };
 
 exports.getByLojaId = (lojaId, callback) => {
-    db.query('SELECT * FROM Servicos WHERE loja_id = ?', [lojaId], callback);
+    db.query('SELECT * FROM servicos WHERE loja_id = ?', [lojaId], callback);
 };
 
 exports.create = (servico, callback) => {
     const { loja_id, nome, descricao, preco, duracao_min, ativo } = servico;
     const sql = `
-        INSERT INTO Servicos (loja_id, nome, descricao, preco, duracao_min, ativo)
+        INSERT INTO servicos (loja_id, nome, descricao, preco, duracao_min, ativo)
         VALUES (?, ?, ?, ?, ?, ?)
     `;
     const values = [loja_id, nome, descricao, preco, duracao_min, ativo ?? true];
@@ -80,7 +80,7 @@ exports.create = (servico, callback) => {
 exports.update = (id, dados, callback) => {
     const { nome, descricao, preco, duracao_min, ativo } = dados;
     const sql = `
-        UPDATE Servicos
+        UPDATE servicos
         SET nome = ?, descricao = ?, preco = ?, duracao_min = ?, ativo = ?
         WHERE id = ?
     `;
@@ -89,7 +89,7 @@ exports.update = (id, dados, callback) => {
 };
 
 exports.delete = (id, callback) => {
-    db.query('DELETE FROM Servicos WHERE id = ?', [id], callback);
+    db.query('DELETE FROM servicos WHERE id = ?', [id], callback);
 };
 
 //
@@ -100,7 +100,7 @@ exports.existePorId = (id, callback) => {
 
     const sql = `
         SELECT id
-        FROM Servicos
+        FROM servicos
         WHERE
             id = ?
             AND ativo = 1
@@ -158,9 +158,9 @@ exports.buscarServicos = (
 
         ) AS distancia
 
-    FROM Servicos s
+    FROM servicos s
 
-    INNER JOIN Lojas l
+    INNER JOIN lojas l
         ON l.id = s.loja_id
 
     WHERE

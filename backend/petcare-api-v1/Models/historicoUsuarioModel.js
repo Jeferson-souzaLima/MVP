@@ -1,4 +1,4 @@
-﻿const db = require('../db');
+const db = require('../db');
 
 const HistoricoUsuarioModel = {
 
@@ -14,8 +14,8 @@ const HistoricoUsuarioModel = {
         i.nome_item,
         i.quantidade,
         i.preco_unitario
-      FROM Pedidos p
-      JOIN ItensPedido i ON i.pedido_id = p.id
+      FROM pedidos p
+      JOIN itenspedido i ON i.pedido_id = p.id
       WHERE p.usuario_id = ?
       AND i.tipo = 'produto'
       ORDER BY p.data_pedido DESC
@@ -44,9 +44,9 @@ const HistoricoUsuarioModel = {
         a.status AS status_atual,
         s.nome AS servico_nome,
         l.nome_fantasia AS loja_nome
-      FROM Agendamentos a
-      JOIN Servicos s ON a.servico_id = s.id
-      JOIN Lojas l ON s.loja_id = l.id
+      FROM agendamentos a
+      JOIN servicos s ON a.servico_id = s.id
+      JOIN lojas l ON s.loja_id = l.id
       WHERE a.usuario_id = ?
       ORDER BY a.data_hora DESC
     `;

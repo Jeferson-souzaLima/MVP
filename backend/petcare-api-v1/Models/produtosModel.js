@@ -23,9 +23,9 @@ exports.getAll = (callback) => {
             pi.caminho AS imagem_caminho,
             pi.principal AS imagem_principal
 
-        FROM Produtos p
-        JOIN Lojas l ON l.id = p.loja_id
-        LEFT JOIN ProdutoImagens pi ON pi.produto_id = p.id
+        FROM produtos p
+        JOIN lojas l ON l.id = p.loja_id
+        LEFT JOIN produtoimagens pi ON pi.produto_id = p.id
         WHERE p.ativo = 1
         ORDER BY p.id DESC
     `;
@@ -48,8 +48,8 @@ exports.getPaginados = (page, limit, callback) => {
     // 1. Conta os produtos válidos do catálogo público
     const queryTotal = `
         SELECT COUNT(*) AS total
-        FROM Produtos p
-        INNER JOIN Lojas l
+        FROM produtos p
+        INNER JOIN lojas l
             ON l.id = p.loja_id
         WHERE
             p.ativo = 1
@@ -86,9 +86,9 @@ exports.getPaginados = (page, limit, callback) => {
                         ORDER BY p.id DESC
                     ) AS ordem_na_loja
 
-                FROM Produtos p
+                FROM produtos p
 
-                INNER JOIN Lojas l
+                INNER JOIN lojas l
                     ON l.id = p.loja_id
 
                 WHERE
@@ -127,7 +127,7 @@ exports.getPaginados = (page, limit, callback) => {
 
             FROM produtos_paginados pp
 
-            LEFT JOIN ProdutoImagens pi
+            LEFT JOIN produtoimagens pi
                 ON pi.produto_id = pp.produto_id
 
             ORDER BY
@@ -186,9 +186,9 @@ exports.getById = (id, callback) => {
             pi.caminho AS imagem_caminho,
             pi.principal AS imagem_principal
 
-        FROM Produtos p
-        JOIN Lojas l ON l.id = p.loja_id
-        LEFT JOIN ProdutoImagens pi ON pi.produto_id = p.id
+        FROM produtos p
+        JOIN lojas l ON l.id = p.loja_id
+        LEFT JOIN produtoimagens pi ON pi.produto_id = p.id
         WHERE p.id = ?
     `;
 
@@ -210,7 +210,7 @@ exports.create = (produto, callback) => {
     const { nome, descricao, preco, estoque, ativo, loja_id } = produto;
 
     const query = `
-        INSERT INTO Produtos (nome, descricao, preco, estoque, ativo, loja_id)
+        INSERT INTO produtos (nome, descricao, preco, estoque, ativo, loja_id)
         VALUES (?, ?, ?, ?, ?, ?)
     `;
 
@@ -226,7 +226,7 @@ exports.update = (id, dados, callback) => {
     const { nome, descricao, preco, estoque, ativo } = dados;
 
     const query = `
-        UPDATE Produtos
+        UPDATE produtos
         SET nome = ?, descricao = ?, preco = ?, estoque = ?, ativo = ?
         WHERE id = ?
     `;
@@ -239,7 +239,7 @@ exports.update = (id, dados, callback) => {
 // DELETAR
 // ===============================
 exports.delete = (id, callback) => {
-    db.query('DELETE FROM Produtos WHERE id = ?', [id], callback);
+    db.query('DELETE FROM produtos WHERE id = ?', [id], callback);
 };
 
 //
@@ -256,7 +256,7 @@ exports.saveImagens = (imagens, callback) => {
 
     const queryVerificar = `
         SELECT COUNT(*) AS total
-        FROM ProdutoImagens
+        FROM produtoimagens
         WHERE produto_id = ?
     `;
 
@@ -272,7 +272,7 @@ exports.saveImagens = (imagens, callback) => {
         ]);
 
         const queryInsert = `
-            INSERT INTO ProdutoImagens
+            INSERT INTO produtoimagens
             (produto_id, caminho, principal)
             VALUES ?
         `;
@@ -305,9 +305,9 @@ exports.getByLojaId = (lojaId, callback) => {
             pi.caminho AS imagem_caminho,
             pi.principal AS imagem_principal
 
-        FROM Produtos p
-        JOIN Lojas l ON l.id = p.loja_id
-        LEFT JOIN ProdutoImagens pi ON pi.produto_id = p.id
+        FROM produtos p
+        JOIN lojas l ON l.id = p.loja_id
+        LEFT JOIN produtoimagens pi ON pi.produto_id = p.id
         WHERE p.loja_id = ?
         ORDER BY p.id DESC
     `;
@@ -342,9 +342,9 @@ exports.getAtivosByLojaId = (lojaId, callback) => {
             pi.caminho AS imagem_caminho,
             pi.principal AS imagem_principal
 
-        FROM Produtos p
-        JOIN Lojas l ON l.id = p.loja_id
-        LEFT JOIN ProdutoImagens pi ON pi.produto_id = p.id
+        FROM produtos p
+        JOIN lojas l ON l.id = p.loja_id
+        LEFT JOIN produtoimagens pi ON pi.produto_id = p.id
         WHERE p.loja_id = ?
           AND p.ativo = 1
         ORDER BY p.id DESC
@@ -365,9 +365,9 @@ exports.getProdutosDistribuidoras = (callback) => {
 
     const query = `
         SELECT p.*
-        FROM Produtos p
-        JOIN Lojas l ON p.loja_id = l.id
-        JOIN Usuarios u ON l.usuario_id = u.id
+        FROM produtos p
+        JOIN lojas l ON p.loja_id = l.id
+        JOIN usuarios u ON l.usuario_id = u.id
         WHERE u.tipo = 'distribuidora'
     `;
 
@@ -383,7 +383,7 @@ exports.getImagemById = (imagemId, produtoId, callback) => {
 
     const query = `
         SELECT id, produto_id, caminho, principal
-        FROM ProdutoImagens
+        FROM produtoimagens
         WHERE id = ? AND produto_id = ?
         LIMIT 1
     `;
@@ -403,7 +403,7 @@ exports.countImagensByProduto = (produtoId, callback) => {
 
     const query = `
         SELECT COUNT(*) AS total
-        FROM ProdutoImagens
+        FROM produtoimagens
         WHERE produto_id = ?
     `;
 
@@ -421,7 +421,7 @@ exports.countImagensByProduto = (produtoId, callback) => {
 exports.definirOutraPrincipal = (produtoId, imagemIdIgnorada, callback) => {
 
     const query = `
-        UPDATE ProdutoImagens
+        UPDATE produtoimagens
         SET principal = 1
         WHERE produto_id = ?
           AND id != ?
@@ -442,7 +442,7 @@ exports.definirImagemPrincipal = (produtoId, imagemId, callback) => {
         if (err) return callback(err);
 
         const removerPrincipal = `
-            UPDATE ProdutoImagens
+            UPDATE produtoimagens
             SET principal = 0
             WHERE produto_id = ?
         `;
@@ -454,7 +454,7 @@ exports.definirImagemPrincipal = (produtoId, imagemId, callback) => {
             }
 
             const definirPrincipal = `
-                UPDATE ProdutoImagens
+                UPDATE produtoimagens
                 SET principal = 1
                 WHERE id = ?
                   AND produto_id = ?
@@ -503,7 +503,7 @@ exports.definirImagemPrincipal = (produtoId, imagemId, callback) => {
 exports.deleteImagem = (imagemId, produtoId, callback) => {
 
     const query = `
-        DELETE FROM ProdutoImagens
+        DELETE FROM produtoimagens
         WHERE id = ? AND produto_id = ?
     `;
 
@@ -562,7 +562,7 @@ exports.existePorId = (id, callback) => {
 
     const sql = `
         SELECT id
-        FROM Produtos
+        FROM produtos
         WHERE
             id = ?
             AND ativo = 1

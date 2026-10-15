@@ -14,7 +14,7 @@ router.put('/minha', authMiddleware, authorizeRoles('lojista'), minhaLojaControl
 router.post('/minha/imagem', authMiddleware, authorizeRoles('lojista'), minhaLojaController.carregarMinhaLoja, upload.single('imagem'), minhaLojaController.atualizarImagemMinhaLoja);
 
 // Rotas protegidas
-router.post('/', authMiddleware, lojasController.criarLoja);
+router.post('/', authMiddleware, authorizeRoles('lojista'), minhaLojaController.criarMinhaLoja);
 router.put('/:id', authMiddleware, lojasController.atualizarLoja);
 router.delete('/:id', authMiddleware, lojasController.deletarLoja);
 

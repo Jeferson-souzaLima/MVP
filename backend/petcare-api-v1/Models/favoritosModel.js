@@ -11,7 +11,7 @@ exports.adicionar = (
 ) => {
 
     const sql = `
-        INSERT INTO Favoritos (
+        INSERT INTO favoritos (
             usuario_id,
             tipo,
             referencia_id
@@ -41,7 +41,7 @@ exports.remover = (
 ) => {
 
     const sql = `
-        DELETE FROM Favoritos
+        DELETE FROM favoritos
         WHERE
             usuario_id = ?
             AND tipo = ?
@@ -73,7 +73,7 @@ exports.listarIds = (
             tipo,
             referencia_id,
             data_criacao
-        FROM Favoritos
+        FROM favoritos
         WHERE usuario_id = ?
         ORDER BY data_criacao DESC
     `;
@@ -108,12 +108,12 @@ exports.listarProdutos = (ids, callback) => {
 
             pi.caminho AS imagem
 
-        FROM Produtos p
+        FROM produtos p
 
-        JOIN Lojas l
+        JOIN lojas l
             ON l.id = p.loja_id
 
-        LEFT JOIN ProdutoImagens pi
+        LEFT JOIN produtoimagens pi
             ON pi.produto_id = p.id
            AND pi.principal = 1
 
@@ -175,7 +175,7 @@ exports.listarLojas = (ids, callback) => {
             nome_fantasia,
             imagem
 
-        FROM Lojas
+        FROM lojas
 
         WHERE id IN (${placeholders})
 
@@ -215,9 +215,9 @@ exports.listarServicos = (ids, callback) => {
             l.nome_fantasia AS loja_nome,
             l.imagem AS loja_logo
 
-        FROM Servicos s
+        FROM servicos s
 
-        JOIN Lojas l
+        JOIN lojas l
             ON l.id = s.loja_id
 
         WHERE
@@ -249,7 +249,7 @@ exports.existe = (
 
     const sql = `
         SELECT id
-        FROM Favoritos
+        FROM favoritos
         WHERE
             usuario_id = ?
             AND tipo = ?

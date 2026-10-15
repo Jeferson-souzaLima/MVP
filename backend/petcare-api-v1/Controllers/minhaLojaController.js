@@ -42,7 +42,7 @@ function validarDados(dados) {
 }
 
 function buscarPorUsuario(usuarioId, callback) {
-    db.query('SELECT * FROM Lojas WHERE usuario_id = ? LIMIT 1', [usuarioId], callback);
+    db.query('SELECT * FROM lojas WHERE usuario_id = ? LIMIT 1', [usuarioId], callback);
 }
 
 async function obterCoordenadas(loja) {
@@ -81,7 +81,7 @@ exports.criarMinhaLoja = async (req, res) => {
         if (lojas.length) return res.status(409).json({ mensagem: 'Este usuário já possui uma loja cadastrada.' });
         const coordenadas = await obterCoordenadas(loja);
         const sql = `
-        INSERT INTO Lojas (
+        INSERT INTO lojas (
             usuario_id,
             nome_fantasia,
             razao_social,
@@ -128,7 +128,7 @@ exports.atualizarMinhaLoja = async (req, res) => {
     console.log("Coordenadas recebidas:", coordenadas);
 
     const sql = `
-    UPDATE Lojas
+    UPDATE lojas
     SET
         nome_fantasia = ?,
         razao_social = ?,
@@ -178,7 +178,7 @@ exports.carregarMinhaLoja = (req, res, next) => {
 exports.atualizarImagemMinhaLoja = (req, res) => {
     if (!req.file) return res.status(400).json({ mensagem: 'Selecione uma imagem para enviar.' });
     const imagem = `/uploads/${req.file.filename}`;
-    db.query('UPDATE Lojas SET imagem = ? WHERE id = ? AND usuario_id = ?', [imagem, req.loja.id, req.usuario.id], (err, result) => {
+    db.query('UPDATE lojas SET imagem = ? WHERE id = ? AND usuario_id = ?', [imagem, req.loja.id, req.usuario.id], (err, result) => {
         if (err) return res.status(500).json({ mensagem: 'Erro ao atualizar a imagem da loja.' });
         if (!result.affectedRows) return res.status(404).json({ mensagem: 'Loja não encontrada.' });
         return res.json({ mensagem: 'Imagem da loja atualizada com sucesso.', imagem });

@@ -27,10 +27,13 @@ const cepRoutes = require('./Routes/cep');
 const app = express();
 
 // Configurações
-const corsOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173')
-    .split(',')
-    .map((origin) => origin.trim())
-    .filter(Boolean);
+const corsOrigins = [...new Set([
+    ...(process.env.CORS_ORIGIN || 'http://localhost:5173')
+        .split(',')
+        .map((origin) => origin.trim())
+        .filter(Boolean),
+    'https://mvp-beige-sigma.vercel.app'
+])];
 
 app.use(cors({
     origin: corsOrigins,
@@ -40,7 +43,15 @@ app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Health check usado pelo Render.
-app.get('/health', (_req, res) => res.status(200).json({ status: 'ok' }));
+app.get('/health', (_req, res) => {
+    db.ping((error) => {
+        if (error) {
+            console.error('Health check do banco falhou:', error.code || 'DB_CONNECTION_ERROR');
+            return res.status(503).json({ status: 'unavailable', database: 'disconnected' });
+        }
+        return res.status(200).json({ status: 'ok', database: 'connected' });
+    });
+});
 
 // Rotas
 app.use('/usuarios', usuariosRoutes);
@@ -67,7 +78,10 @@ setInterval(() => pedidosModel.cancelarReservasExpiradas((err) => {
 }), 60 * 1000).unref();
 
 // Inicia o servidor
-const PORT = process.env.PORT || 3000;
+const PORT = Number(process.env.PORT || 3000);
+if (!Number.isInteger(PORT) || PORT < 1 || PORT > 65535) {
+    throw new Error('PORT deve ser um número de porta válido.');
+}
 app.listen(PORT, () => {
     console.log(`Servidor rodando na porta ${ PORT }`);
 });

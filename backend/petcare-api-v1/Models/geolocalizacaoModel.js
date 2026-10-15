@@ -22,7 +22,7 @@ exports.buscarLojas = (
 
         SELECT COUNT(*) AS total
 
-        FROM Lojas
+        FROM lojas
 
         WHERE
 
@@ -109,7 +109,7 @@ exports.buscarLojas = (
                         )
                     ) AS distancia
 
-                FROM Lojas
+                FROM lojas
 
                 WHERE
 
@@ -194,9 +194,9 @@ exports.buscarProdutos = (
 
         SELECT COUNT(*) AS total
 
-        FROM Produtos p
+        FROM produtos p
 
-        INNER JOIN Lojas l
+        INNER JOIN lojas l
             ON l.id = p.loja_id
 
         WHERE
@@ -318,9 +318,9 @@ exports.buscarProdutos = (
 
                         ) AS ordem_na_loja
 
-                    FROM Produtos p
+                    FROM produtos p
 
-                    INNER JOIN Lojas l
+                    INNER JOIN lojas l
                         ON l.id = p.loja_id
 
                     WHERE
@@ -335,7 +335,7 @@ exports.buscarProdutos = (
 
                 ) AS produtos_selecionados
 
-                LEFT JOIN ProdutoImagens pi
+                LEFT JOIN produtoimagens pi
                     ON pi.produto_id =
                        produtos_selecionados.produto_id
 
@@ -425,8 +425,8 @@ exports.buscarServicos = (
     `;
 
     const whereSql = `
-        FROM Servicos s
-        INNER JOIN Lojas l ON l.id = s.loja_id
+        FROM servicos s
+        INNER JOIN lojas l ON l.id = s.loja_id
         WHERE s.ativo = 1 AND l.ativo = 1
             AND l.latitude IS NOT NULL AND l.longitude IS NOT NULL
         HAVING distancia <= ?
@@ -483,9 +483,9 @@ exports.buscarServicos = (
 
             ) AS distancia
 
-        FROM Servicos s
+        FROM servicos s
 
-        INNER JOIN Lojas l
+        INNER JOIN lojas l
             ON l.id = s.loja_id
 
         WHERE

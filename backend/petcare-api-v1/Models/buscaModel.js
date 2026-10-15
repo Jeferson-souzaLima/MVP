@@ -51,12 +51,12 @@ function buscarProdutos(termo, limite, callback) {
 
             pi.caminho AS imagem
 
-        FROM Produtos p
+        FROM produtos p
 
-        JOIN Lojas l
+        JOIN lojas l
             ON l.id = p.loja_id
 
-        LEFT JOIN ProdutoImagens pi
+        LEFT JOIN produtoimagens pi
             ON pi.produto_id = p.id
            AND pi.principal = 1
 
@@ -128,7 +128,7 @@ function buscarLojas(termo, limite, callback) {
             nome_fantasia,
             imagem
 
-        FROM Lojas
+        FROM lojas
 
         WHERE
             nome_fantasia LIKE ?
@@ -174,9 +174,9 @@ function buscarServicos(termo, limite, callback) {
             l.nome_fantasia AS loja_nome,
             l.imagem AS loja_logo
 
-        FROM Servicos s
+        FROM servicos s
 
-        JOIN Lojas l
+        JOIN lojas l
             ON l.id = s.loja_id
 
         WHERE

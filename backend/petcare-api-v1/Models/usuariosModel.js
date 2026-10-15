@@ -1,7 +1,7 @@
 const db = require('../db');
 
 exports.getAll = (callback) => {
-    db.query('SELECT * FROM Usuarios', callback);
+    db.query('SELECT * FROM usuarios', callback);
 };
 
 exports.getById = (id, callback) => {
@@ -21,7 +21,7 @@ exports.getById = (id, callback) => {
             latitude,
             longitude,
             tipo
-        FROM Usuarios
+        FROM usuarios
         WHERE id = ?
         LIMIT 1
     `;
@@ -52,7 +52,7 @@ exports.create = (usuario, callback) => {
     } = usuario;
 
     const query = `
-        INSERT INTO Usuarios (
+        INSERT INTO usuarios (
             nome,
             email,
             senha_hash,
@@ -109,7 +109,7 @@ exports.update = (id, dados, callback) => {
     } = dados;
 
     const sql = `
-        UPDATE Usuarios
+        UPDATE usuarios
         SET
             nome = ?,
             email = ?,
@@ -165,7 +165,7 @@ exports.updatePerfil = (id, dados, callback) => {
     } = dados;
 
     const sql = `
-        UPDATE Usuarios
+        UPDATE usuarios
         SET
             nome = ?,
             telefone = ?,

@@ -4,7 +4,7 @@ module.exports = function authorizeRoles(...permissoesPermitidas) {
         const { usuario } = req;
 
         if (!usuario || !permissoesPermitidas.includes(usuario.tipo)) {
-            return res.status(403).json({ mensagem: 'Acesso negado: permissão insuficiente.' });
+            return res.status(403).json({ mensagem: 'Acesso negado: permissï¿½o insuficiente.' });
         }
 
         next();

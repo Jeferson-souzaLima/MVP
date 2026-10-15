@@ -33,7 +33,7 @@ exports.register = (req, res) => {
         return res.status(400).json({ mensagem: 'A confirmação de senha não confere.' });
     }
 
-    db.query('SELECT id FROM Usuarios WHERE email = ?', [emailNormalizado], (selectErr, users) => {
+    db.query('SELECT id FROM usuarios WHERE email = ?', [emailNormalizado], (selectErr, users) => {
         if (selectErr) return res.status(500).send(selectErr);
         if (users.length > 0) return res.status(409).json({ mensagem: 'E-mail já cadastrado.' });
 
@@ -41,7 +41,7 @@ exports.register = (req, res) => {
             if (hashErr) return res.status(500).send(hashErr);
 
             const { token, tokenHash } = gerarTokenConfirmacao();
-            const sql = `INSERT INTO Usuarios
+            const sql = `INSERT INTO usuarios
                 (nome, email, senha_hash, tipo, email_verificado, email_verificacao_token_hash, email_verificacao_expira_em)
                 VALUES (?, ?, ?, 'cliente', 0, ?, DATE_ADD(NOW(), INTERVAL 24 HOUR))`;
 
@@ -71,7 +71,7 @@ exports.confirmarEmail = (req, res) => {
     }
 
     const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
-    const sql = `UPDATE Usuarios
+    const sql = `UPDATE usuarios
         SET email_verificado = 1,
             email_verificacao_token_hash = NULL,
             email_verificacao_expira_em = NULL
@@ -97,7 +97,7 @@ exports.reenviarConfirmacao = (req, res) => {
     }
 
     db.query(
-        'SELECT id, email_verificado FROM Usuarios WHERE email = ? AND tipo = ?',
+        'SELECT id, email_verificado FROM usuarios WHERE email = ? AND tipo = ?',
         [email, 'cliente'],
         (selectErr, users) => {
             if (selectErr) return res.status(500).send(selectErr);
@@ -110,7 +110,7 @@ exports.reenviarConfirmacao = (req, res) => {
 
             const { token, tokenHash } = gerarTokenConfirmacao();
             db.query(
-                `UPDATE Usuarios
+                `UPDATE usuarios
                  SET email_verificacao_token_hash = ?,
                      email_verificacao_expira_em = DATE_ADD(NOW(), INTERVAL 24 HOUR)
                  WHERE id = ?`,
@@ -136,7 +136,7 @@ exports.validarEmailConfirmado = (req, res, next) => {
     if (!EMAIL_REGEX.test(email)) return next();
 
     db.query(
-        'SELECT email_verificado FROM Usuarios WHERE email = ? AND tipo = ?',
+        'SELECT email_verificado FROM usuarios WHERE email = ? AND tipo = ?',
         [email, 'cliente'],
         (err, users) => {
             if (err) return res.status(500).send(err);

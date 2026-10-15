@@ -63,7 +63,7 @@ async function calcularFrete({ lojaId, latitude, longitude }) {
     }
 
     const lojas = await executar(
-        'SELECT * FROM Lojas WHERE id = ? AND ativo = 1',
+        'SELECT * FROM lojas WHERE id = ? AND ativo = 1',
         [lojaId]
     );
 
@@ -182,7 +182,7 @@ async function criarPedidoReservado({ usuarioId, dados }) {
     try {
 
         const lojas = await executar(
-            'SELECT * FROM Lojas WHERE id = ? AND ativo = 1 FOR UPDATE',
+            'SELECT * FROM lojas WHERE id = ? AND ativo = 1 FOR UPDATE',
             [lojaId]
         );
 
@@ -213,7 +213,7 @@ async function criarPedidoReservado({ usuarioId, dados }) {
 
         const produtos = await executar(
             `SELECT id, nome, preco, estoque
-             FROM Produtos
+             FROM produtos
              WHERE loja_id = ?
              AND ativo = 1
              AND id IN (${placeholders})
@@ -285,7 +285,7 @@ async function criarPedidoReservado({ usuarioId, dados }) {
         );
 
         const resultado = await executar(
-            `INSERT INTO Pedidos (
+            `INSERT INTO pedidos (
                 usuario_id,
                 loja_id,
                 subtotal,
@@ -334,7 +334,7 @@ async function criarPedidoReservado({ usuarioId, dados }) {
         const pedidoId = resultado.insertId;
 
         await executar(
-            `INSERT INTO ItensPedido (
+            `INSERT INTO itenspedido (
                 pedido_id,
                 tipo,
                 item_id,
@@ -363,7 +363,7 @@ async function criarPedidoReservado({ usuarioId, dados }) {
         } of itensConfirmados) {
 
             await executar(
-                `UPDATE Produtos
+                `UPDATE produtos
                  SET estoque = estoque - ?
                  WHERE id = ?
                  AND estoque >= ?`,

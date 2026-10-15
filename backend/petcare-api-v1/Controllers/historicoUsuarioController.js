@@ -4,7 +4,7 @@ exports.getHistoricoUsuario = (req, res) => {
     const usuario = req.usuario;
 
     if (!usuario) {
-        return res.status(401).json({ mensagem: 'Usuário não autenticado.' });
+        return res.status(401).json({ mensagem: 'Usuï¿½rio nï¿½o autenticado.' });
     }
 
     const usuario_id = usuario.id;
@@ -37,7 +37,7 @@ exports.getHistoricoUsuario = (req, res) => {
 
         const pedidos = Object.values(pedidosMap);
 
-        // Buscar histórico de cada pedido
+        // Buscar histï¿½rico de cada pedido
         let pendentes = pedidos.length;
 
         if (pendentes === 0) {
@@ -53,7 +53,7 @@ exports.getHistoricoUsuario = (req, res) => {
         });
     });
 
-    // ?? Buscar serviços
+    // ?? Buscar serviï¿½os
     function buscarServicos(produtos) {
         historicoModel.getServicosPorUsuario(usuario_id, (err, servicos) => {
             if (err) return res.status(500).json(err);

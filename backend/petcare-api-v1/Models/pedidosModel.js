@@ -3,7 +3,7 @@ const historicoStatusModel = require('./historicoStatusModel');
 
 // Buscar todos os pedidos
 exports.getAll = (callback) => {
-    db.query('SELECT * FROM Pedidos', callback);
+    db.query('SELECT * FROM pedidos', callback);
 };
 
 // Criar um novo pedido com itens
@@ -12,7 +12,7 @@ exports.createPedidoComItens = (
     callback
 ) => {
     const query = `
-        INSERT INTO Pedidos (usuario_id, loja_id, total, status)
+        INSERT INTO pedidos (usuario_id, loja_id, total, status)
         VALUES (?, ?, ?, 'aguardando_pagamento')
     `;
 
@@ -37,7 +37,7 @@ exports.createPedidoComItens = (
 
             // 2. Preparar itens
             const itensQuery = `
-                INSERT INTO ItensPedido
+                INSERT INTO itenspedido
                 (pedido_id, tipo, item_id, nome_item, preco_unitario, quantidade)
                 VALUES ?
             `;
@@ -87,7 +87,7 @@ exports.createPedidoComItens = (
 // Atualizar o status do pedido
 exports.updateStatus = (id, status, callback) => {
     const query = `
-        UPDATE Pedidos
+        UPDATE pedidos
         SET status = ?
         WHERE id = ?
     `;
@@ -121,7 +121,7 @@ exports.updateStatus = (id, status, callback) => {
 // Deletar um pedido
 exports.delete = (id, callback) => {
     const query = `
-        DELETE FROM Pedidos
+        DELETE FROM pedidos
         WHERE id = ?
     `;
 
@@ -137,7 +137,7 @@ exports.getByFilters = (query, values, callback) => {
 exports.getCarrinhoPendente = (usuario_id, loja_id, callback) => {
     const query = `
         SELECT *
-        FROM Pedidos
+        FROM pedidos
         WHERE usuario_id = ?
           AND loja_id = ?
           AND status = 'pendente'
@@ -153,8 +153,8 @@ exports.getCarrinhoCompleto = (pedido_id, callback) => {
         SELECT
             p.*,
             i.*
-        FROM Pedidos p
-        JOIN ItensPedido i ON i.pedido_id = p.id
+        FROM pedidos p
+        JOIN itenspedido i ON i.pedido_id = p.id
         WHERE p.id = ?
     `;
 
@@ -169,7 +169,7 @@ exports.getByIdSimples = (id, callback) => {
             loja_id,
             total,
             status
-        FROM Pedidos
+        FROM pedidos
         WHERE id = ?
     `;
 
@@ -181,11 +181,11 @@ exports.getByIdSimples = (id, callback) => {
 };
 
 exports.confirmarPagamento = (id, callback) => {
-    db.query("UPDATE Pedidos SET status = 'pago', reserva_expira_em = NULL WHERE id = ? AND status = 'aguardando_pagamento' AND reserva_expira_em >= NOW()", [id], callback);
+    db.query("UPDATE pedidos SET status = 'pago', reserva_expira_em = NULL WHERE id = ? AND status = 'aguardando_pagamento' AND reserva_expira_em >= NOW()", [id], callback);
 };
 
 exports.cancelarReservasExpiradas = (callback) => {
-    db.query("SELECT id FROM Pedidos WHERE status = 'aguardando_pagamento' AND reserva_expira_em < NOW()", (erro, pedidos) => {
+    db.query("SELECT id FROM pedidos WHERE status = 'aguardando_pagamento' AND reserva_expira_em < NOW()", (erro, pedidos) => {
         if (erro) return callback(erro);
         let pendentes = pedidos.length;
         if (!pendentes) return callback(null, 0);
@@ -200,13 +200,13 @@ exports.cancelarReservasExpiradas = (callback) => {
 exports.cancelarReservaExpirada = (id, callback) => {
     db.beginTransaction((erro) => {
         if (erro) return callback(erro);
-        db.query("SELECT id FROM Pedidos WHERE id = ? AND status = 'aguardando_pagamento' AND reserva_expira_em < NOW() FOR UPDATE", [id], (err, pedidos) => {
+        db.query("SELECT id FROM pedidos WHERE id = ? AND status = 'aguardando_pagamento' AND reserva_expira_em < NOW() FOR UPDATE", [id], (err, pedidos) => {
             if (err || !pedidos.length) return db.rollback(() => callback(err, false));
-            db.query('SELECT item_id, quantidade FROM ItensPedido WHERE pedido_id = ? AND tipo = \'produto\'', [id], (itensErr, itens) => {
+            db.query('SELECT item_id, quantidade FROM itenspedido WHERE pedido_id = ? AND tipo = \'produto\'', [id], (itensErr, itens) => {
                 if (itensErr) return db.rollback(() => callback(itensErr));
-                const devolver = itens.reduce((promessa, item) => promessa.then(() => new Promise((resolve, reject) => db.query('UPDATE Produtos SET estoque = estoque + ? WHERE id = ?', [item.quantidade, item.item_id], erroAtualizacao => erroAtualizacao ? reject(erroAtualizacao) : resolve()))), Promise.resolve());
+                const devolver = itens.reduce((promessa, item) => promessa.then(() => new Promise((resolve, reject) => db.query('UPDATE produtos SET estoque = estoque + ? WHERE id = ?', [item.quantidade, item.item_id], erroAtualizacao => erroAtualizacao ? reject(erroAtualizacao) : resolve()))), Promise.resolve());
                 devolver.then(() => {
-                    db.query("UPDATE Pedidos SET status = 'cancelado', cancelado_em = NOW() WHERE id = ?", [id], updateErr => {
+                    db.query("UPDATE pedidos SET status = 'cancelado', cancelado_em = NOW() WHERE id = ?", [id], updateErr => {
                         if (updateErr) return db.rollback(() => callback(updateErr));
                         db.query("INSERT INTO historico_status (tipo, referencia_id, status) VALUES ('pedido', ?, 'cancelado')", [id], historicoErr => {
                             if (historicoErr) return db.rollback(() => callback(historicoErr));
@@ -222,13 +222,13 @@ exports.cancelarReservaExpirada = (id, callback) => {
 exports.cancelarReserva = (id, callback) => {
     db.beginTransaction((erro) => {
         if (erro) return callback(erro);
-        db.query("SELECT id FROM Pedidos WHERE id = ? AND status = 'aguardando_pagamento' FOR UPDATE", [id], (err, pedidos) => {
+        db.query("SELECT id FROM pedidos WHERE id = ? AND status = 'aguardando_pagamento' FOR UPDATE", [id], (err, pedidos) => {
             if (err || !pedidos.length) return db.rollback(() => callback(err, false));
-            db.query("SELECT item_id, quantidade FROM ItensPedido WHERE pedido_id = ? AND tipo = 'produto'", [id], (itensErr, itens) => {
+            db.query("SELECT item_id, quantidade FROM itenspedido WHERE pedido_id = ? AND tipo = 'produto'", [id], (itensErr, itens) => {
                 if (itensErr) return db.rollback(() => callback(itensErr));
-                const devolver = itens.reduce((promessa, item) => promessa.then(() => new Promise((resolve, reject) => db.query('UPDATE Produtos SET estoque = estoque + ? WHERE id = ?', [item.quantidade, item.item_id], atualizacaoErr => atualizacaoErr ? reject(atualizacaoErr) : resolve()))), Promise.resolve());
+                const devolver = itens.reduce((promessa, item) => promessa.then(() => new Promise((resolve, reject) => db.query('UPDATE produtos SET estoque = estoque + ? WHERE id = ?', [item.quantidade, item.item_id], atualizacaoErr => atualizacaoErr ? reject(atualizacaoErr) : resolve()))), Promise.resolve());
                 devolver.then(() => {
-                    db.query("UPDATE Pedidos SET status = 'cancelado', cancelado_em = NOW() WHERE id = ?", [id], updateErr => {
+                    db.query("UPDATE pedidos SET status = 'cancelado', cancelado_em = NOW() WHERE id = ?", [id], updateErr => {
                         if (updateErr) return db.rollback(() => callback(updateErr));
                         db.query("INSERT INTO historico_status (tipo, referencia_id, status) VALUES ('pedido', ?, 'cancelado')", [id], historicoErr => {
                             if (historicoErr) return db.rollback(() => callback(historicoErr));
@@ -259,10 +259,10 @@ exports.getMeusPedidosCompletos = (usuario_id, callback) => {
             i.nome_item,
             i.preco_unitario,
             i.quantidade
-        FROM Pedidos p
-        INNER JOIN Lojas l
+        FROM pedidos p
+        INNER JOIN lojas l
             ON l.id = p.loja_id
-        INNER JOIN ItensPedido i
+        INNER JOIN itenspedido i
             ON i.pedido_id = p.id
         WHERE p.usuario_id = ?
         ORDER BY p.data_pedido DESC, p.id DESC
@@ -307,9 +307,9 @@ exports.getPedidosLojaCompletos = (loja_id, callback) => {
             i.preco_unitario,
             i.quantidade
 
-        FROM Pedidos p
+        FROM pedidos p
 
-        INNER JOIN ItensPedido i
+        INNER JOIN itenspedido i
             ON i.pedido_id = p.id
 
         WHERE p.loja_id = ?

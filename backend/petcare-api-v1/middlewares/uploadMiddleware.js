@@ -1,13 +1,13 @@
 const multer = require('multer');
 const path = require('path');
 
-// Configurações do Multer para armazenar a imagem
+// Configuraï¿½ï¿½es do Multer para armazenar a imagem
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, './uploads');  // Caminho da pasta de uploads
     },
     filename: function (req, file, cb) {
-        const fileName = Date.now() + path.extname(file.originalname);  // Nome único para o arquivo
+        const fileName = Date.now() + path.extname(file.originalname);  // Nome ï¿½nico para o arquivo
         cb(null, fileName);
     }
 });
@@ -18,7 +18,7 @@ const fileFilter = (req, file, cb) => {
     if (allowedTypes.includes(file.mimetype)) {
         cb(null, true);
     } else {
-        cb(new Error('Tipo de arquivo inválido. Apenas imagens são permitidas.'), false);
+        cb(new Error('Tipo de arquivo invï¿½lido. Apenas imagens sï¿½o permitidas.'), false);
     }
 };
 

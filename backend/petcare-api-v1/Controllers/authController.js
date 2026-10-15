@@ -17,7 +17,7 @@ exports.register = (req, res) => {
         });
     }
 
-    db.query('SELECT * FROM Usuarios WHERE email = ?', [email], (err, results) => {
+    db.query('SELECT * FROM usuarios WHERE email = ?', [email], (err, results) => {
         if (err) return res.status(500).send(err);
 
         if (results.length > 0) {
@@ -28,7 +28,7 @@ exports.register = (req, res) => {
             if (err) return res.status(500).send(err);
 
             db.query(
-                'INSERT INTO Usuarios (nome, email, senha_hash, tipo) VALUES (?, ?, ?, ?)',
+                'INSERT INTO usuarios (nome, email, senha_hash, tipo) VALUES (?, ?, ?, ?)',
                 [nome, email, hash, tipo],
                 (err, result) => {
                     if (err) return res.status(500).send(err);
@@ -67,7 +67,7 @@ exports.login = (req, res) => {
         });
     }
 
-    db.query('SELECT * FROM Usuarios WHERE email = ?', [email], (err, results) => {
+    db.query('SELECT * FROM usuarios WHERE email = ?', [email], (err, results) => {
         if (err) return res.status(500).send(err);
 
         if (results.length === 0) {
@@ -91,7 +91,7 @@ exports.login = (req, res) => {
             // =========================
             if (tipoUsuario === 'lojista') {
                 db.query(
-                    'SELECT id FROM Lojas WHERE usuario_id = ? LIMIT 1',
+                    'SELECT id FROM lojas WHERE usuario_id = ? LIMIT 1',
                     [usuario.id],
                     (err, lojaResults) => {
                         if (err) return res.status(500).send(err);
@@ -114,7 +114,7 @@ exports.login = (req, res) => {
                             { expiresIn: '1d' }
                         );
 
-                      
+
 
                         return res.json({
                             mensagem: 'Login realizado com sucesso!',
@@ -166,7 +166,7 @@ exports.me = (req, res) => {
     db.query(
         `SELECT id, nome, email, telefone, tipo, cidade, uf, cep, logradouro,
                 numero, complemento, bairro, latitude, longitude
-         FROM Usuarios WHERE id = ?`,
+         FROM usuarios WHERE id = ?`,
         [userId],
         (err, results) => {
             if (err) return res.status(500).send(err);
@@ -182,7 +182,7 @@ exports.me = (req, res) => {
             // Se for lojista, devolve tambÃƒÂ©m a loja vinculada
             if (usuario.tipo === 'lojista') {
                 db.query(
-                    'SELECT id FROM Lojas WHERE usuario_id = ? LIMIT 1',
+                    'SELECT id FROM lojas WHERE usuario_id = ? LIMIT 1',
                     [usuario.id],
                     (err, lojaResults) => {
                         if (err) return res.status(500).send(err);
@@ -225,7 +225,7 @@ exports.registerLojista = (req, res) => {
     }
 
     // 1) verifica se email jÃƒÂ¡ existe
-    db.query('SELECT * FROM Usuarios WHERE email = ?', [email], (err, results) => {
+    db.query('SELECT * FROM usuarios WHERE email = ?', [email], (err, results) => {
         if (err) return res.status(500).send(err);
 
         if (results.length > 0) {
@@ -237,7 +237,7 @@ exports.registerLojista = (req, res) => {
             if (err) return res.status(500).send(err);
 
             db.query(
-                'INSERT INTO Usuarios (nome, email, senha_hash, tipo) VALUES (?, ?, ?, ?)',
+                'INSERT INTO usuarios (nome, email, senha_hash, tipo) VALUES (?, ?, ?, ?)',
                 [nomeFantasia, email, hash, 'lojista'],
                 (err, result) => {
                     if (err) return res.status(500).send(err);
@@ -246,7 +246,7 @@ exports.registerLojista = (req, res) => {
 
                     // 3) cria loja vinculada ao usuÃƒÂ¡rio
                     db.query(
-                        `INSERT INTO Lojas 
+                        `INSERT INTO lojas
                         (usuario_id, nome_fantasia, razao_social, cnpj, telefone, cidade, uf, descricao)
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
                         [

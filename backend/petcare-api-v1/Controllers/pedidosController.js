@@ -255,7 +255,7 @@ exports.relatorioPedidos = (req, res) => {
 
     const { status, data_inicial, data_final } = req.query;
 
-    let query = 'SELECT * FROM Pedidos WHERE loja_id = ?';
+    let query = 'SELECT * FROM pedidos WHERE loja_id = ?';
     let values = [usuario.loja_id];
 
     if (status) {
@@ -308,7 +308,7 @@ exports.cancelarPeloCliente = (req, res) => {
                 return res.json({ mensagem: 'Pedido cancelado e estoque liberado.' });
             });
         }
-        db.query("UPDATE Pedidos SET status = 'cancelado', cancelado_em = NOW() WHERE id = ?", [pedidoId], (updateErr) => {
+        db.query("UPDATE pedidos SET status = 'cancelado', cancelado_em = NOW() WHERE id = ?", [pedidoId], (updateErr) => {
             if (updateErr) return res.status(500).json({ mensagem: 'Erro ao cancelar pedido.' });
             db.query("INSERT INTO historico_status (tipo, referencia_id, status) VALUES ('pedido', ?, 'cancelado')", [pedidoId], (histErr) => {
                 if (histErr) return res.status(500).json({ mensagem: 'Pedido cancelado, mas o hist�rico n�o p�de ser registrado.' });

@@ -2,14 +2,14 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-// Função para garantir que o diretório existe
+// Funï¿½ï¿½o para garantir que o diretï¿½rio existe
 function ensureDir(dir) {
     if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
     }
 }
 
-// Configuração dinâmica de armazenamento
+// Configuraï¿½ï¿½o dinï¿½mica de armazenamento
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         let folder = 'uploads';

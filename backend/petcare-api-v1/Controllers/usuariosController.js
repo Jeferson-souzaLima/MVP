@@ -37,7 +37,7 @@ exports.criarUsuario = (req, res) => {
 
 exports.deletarUsuario = (req, res) => {
     const id = req.params.id;
-    db.query('DELETE FROM Usuarios WHERE id = ?', [id], (err, result) => {
+    db.query('DELETE FROM usuarios WHERE id = ?', [id], (err, result) => {
         if (err) return res.status(500).json({ erro: 'Erro ao deletar usuario.' });
         if (result.affectedRows === 0) return res.status(404).json({ mensagem: 'Usuario nao encontrado.' });
         return res.status(200).json({ mensagem: 'Usuario deletado com sucesso!' });
