@@ -1,4 +1,5 @@
 import { getMediaUrl } from "@/services/mediaUrl";
+import { API_URL } from "@/services/apiUrl";
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
