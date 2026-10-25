@@ -1,4 +1,5 @@
 import { API_URL } from "@/services/apiUrl";
+import { getMediaUrl } from "@/services/mediaUrl";
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
@@ -452,10 +453,10 @@ export default function LojaDetalhes() {
                 {itens.map((item) => {
                   const qtd = quantidades[item.id] || 0;
 
-                  const imagem =
-                    item.imagens?.[0]?.caminho
-                      ? `${API_URL}${item.imagens[0].caminho}`
-                      : "/images/produto-padrao.jpg";
+                  const imagem = getMediaUrl(
+                    item.imagens?.[0]?.caminho,
+                    "/images/produto-padrao.jpg"
+                  );
 
                   return (
                     <article

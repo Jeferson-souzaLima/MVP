@@ -1,4 +1,4 @@
-import { API_URL } from "@/services/apiUrl";
+import { getMediaUrl } from "@/services/mediaUrl";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ShoppingCart, Check } from "lucide-react";
@@ -13,14 +13,12 @@ export function ProductCard({
 
   const [adicionado, setAdicionado] = useState(false);
 
-  const imagemProduto =
-    produto.imagens?.[0]?.caminho
-      ? `${API_URL}${produto.imagens[0].caminho}`
-      : "/images/produto-padrao.jpg";
+  const imagemProduto = getMediaUrl(
+    produto.imagens?.[0]?.caminho,
+    "/images/produto-padrao.jpg"
+  );
 
-  const logoLoja = produto.loja?.logo
-    ? `${API_URL}${produto.loja.logo}`
-    : "/images/loja-padrao.png";
+  const logoLoja = getMediaUrl(produto.loja?.logo, "/images/loja-padrao.png");
 
   const precoFormatado = Number(produto.preco || 0).toLocaleString(
     "pt-BR",

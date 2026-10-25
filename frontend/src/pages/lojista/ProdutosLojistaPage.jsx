@@ -1,4 +1,5 @@
 import { API_URL } from "@/services/apiUrl";
+import { getMediaUrl } from "@/services/mediaUrl";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useAuth } from "../../hooks/useAuth";
@@ -261,11 +262,7 @@ export default function ProdutosLojistaPage() {
             >
               <div className="flex gap-4 items-center">
                 <img
-                  src={
-                    produto.imagens?.[0]?.caminho
-                      ? `${API_URL}${produto.imagens[0].caminho}`
-                      : "/images/produto-padrao.jpg"
-                  }
+                  src={getMediaUrl(produto.imagens?.[0]?.caminho, "/images/produto-padrao.jpg")}
                   alt={produto.nome}
                   className="w-24 h-24 rounded-xl object-cover flex-shrink-0"
                 />
@@ -385,7 +382,7 @@ export default function ProdutosLojistaPage() {
                           className="relative"
                         >
                           <img
-                            src={`${API_URL}${imagem.caminho}`}
+                            src={getMediaUrl(imagem.caminho, "/images/produto-padrao.jpg")}
                             alt="Imagem do produto"
                             className="w-full h-24 rounded-xl object-cover"
                           />

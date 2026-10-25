@@ -1,4 +1,4 @@
-import { API_URL } from "@/services/apiUrl";
+import { getMediaUrl } from "@/services/mediaUrl";
 import { useCarrinho } from "../../context/CarrinhoContext";
 
 export default function CarrinhoItem({
@@ -21,10 +21,7 @@ export default function CarrinhoItem({
     currency: "BRL",
   });
 
-  const imagemProduto =
-    item.imagem
-      ? `${API_URL}${item.imagem}`
-      : "/images/produto-padrao.jpg";
+  const imagemProduto = getMediaUrl(item.imagem, "/images/produto-padrao.jpg");
 
   return (
     <div className="flex gap-4 p-4 bg-white rounded-xl shadow-sm border">

@@ -1,4 +1,4 @@
-import { API_URL } from "@/services/apiUrl";
+import { getMediaUrl } from "@/services/mediaUrl";
 import { useEffect, useRef, useState } from "react";
 import {
   Home,
@@ -752,9 +752,10 @@ export function MobileBottomNav() {
                           >
                             {carrinho.itens.map(
                               (item) => {
-                                const imagem = item.imagem
-                                  ? `${API_URL}${item.imagem}`
-                                  : "/images/produto-padrao.jpg";
+                                const imagem = getMediaUrl(
+                                  item.imagem,
+                                  "/images/produto-padrao.jpg"
+                                );
 
                                 return (
                                   <div

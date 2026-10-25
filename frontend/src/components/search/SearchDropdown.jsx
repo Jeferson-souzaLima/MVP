@@ -1,4 +1,4 @@
-import { API_URL } from "@/services/apiUrl";
+import { getMediaUrl } from "@/services/mediaUrl";
 import { Package, Store, Scissors } from "lucide-react";
 
 export function SearchDropdown({
@@ -117,10 +117,10 @@ export function SearchDropdown({
 
               {produtos.map((produto) => {
                 const indice = indiceAtual++;
-                const imagemProduto =
-                produto.imagens?.[0]?.caminho
-                    ? `${API_URL}${produto.imagens[0].caminho}`
-                    : "/images/produto-padrao.jpg";
+                const imagemProduto = getMediaUrl(
+                  produto.imagens?.[0]?.caminho,
+                  "/images/produto-padrao.jpg"
+                );
 
                 return (
                   <button
@@ -173,9 +173,7 @@ export function SearchDropdown({
 
               {lojas.map((loja) => {
                 const indice = indiceAtual++;
-                const logoLoja = loja.imagem
-                  ? `${API_URL}${loja.imagem}`
-                  : "/images/loja-padrao.png";
+                const logoLoja = getMediaUrl(loja.imagem, "/images/loja-padrao.png");
 
                 return (
                   <button
@@ -214,9 +212,7 @@ export function SearchDropdown({
 
               {servicos.map((servico) => {
                 const indice = indiceAtual++;
-                const logoLoja = servico.loja_logo
-                  ? `${API_URL}${servico.loja_logo}`
-                  : "/images/loja-padrao.png";
+                const logoLoja = getMediaUrl(servico.loja_logo, "/images/loja-padrao.png");
 
                 return (
                   <button
