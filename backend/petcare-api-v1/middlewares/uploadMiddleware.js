@@ -1,31 +1,23 @@
 const multer = require('multer');
 const path = require('path');
 
-// Configura��es do Multer para armazenar a imagem
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, './uploads');  // Caminho da pasta de uploads
-    },
-    filename: function (req, file, cb) {
-        const fileName = Date.now() + path.extname(file.originalname);  // Nome �nico para o arquivo
-        cb(null, fileName);
-    }
-});
+const allowedTypes = new Map([
+    ['image/jpeg', new Set(['.jpg', '.jpeg'])],
+    ['image/png', new Set(['.png'])]
+]);
 
-// Validar o tipo de arquivo
-const fileFilter = (req, file, cb) => {
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
-    if (allowedTypes.includes(file.mimetype)) {
-        cb(null, true);
-    } else {
-        cb(new Error('Tipo de arquivo inv�lido. Apenas imagens s�o permitidas.'), false);
+const fileFilter = (_req, file, cb) => {
+    const extensions = allowedTypes.get(file.mimetype);
+    const extension = path.extname(file.originalname).toLowerCase();
+
+    if (!extensions || !extensions.has(extension)) {
+        return cb(new Error('Tipo de arquivo inválido. Envie uma imagem JPEG ou PNG.'));
     }
+    return cb(null, true);
 };
 
-const upload = multer({
-    storage: storage,
-    fileFilter: fileFilter,
-    limits: { fileSize: 5 * 1024 * 1024 }  // Limite de 5MB por imagem
+module.exports = multer({
+    storage: multer.memoryStorage(),
+    fileFilter,
+    limits: { fileSize: 5 * 1024 * 1024, files: 10 }
 });
-
-module.exports = upload;

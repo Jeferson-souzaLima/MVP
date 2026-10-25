@@ -1,6 +1,20 @@
 const fs = require('fs');
 const path = require('path');
 const produtosModel = require('../Models/produtosModel');
+const r2Storage = require('../Services/r2Storage');
+
+const saveImagens = (imagens) => new Promise((resolve, reject) => {
+    produtosModel.saveImagens(imagens, (err, result) => err ? reject(err) : resolve(result));
+});
+
+async function removerObjetosR2(objetos) {
+    const resultados = await Promise.allSettled(objetos.map(({ key }) => r2Storage.deleteByKey(key)));
+    resultados.forEach((resultado) => {
+        if (resultado.status === 'rejected') {
+            console.error('Falha ao remover objeto de imagem do R2:', resultado.reason?.name || 'R2_DELETE_ERROR');
+        }
+    });
+}
 
 //
 // ===============================
@@ -163,14 +177,17 @@ exports.deletarProduto = (req, res) => {
 // ===============================
 // UPLOAD DE IMAGENS (S� DONO)
 // ===============================
-exports.uploadImagensProduto = (req, res) => {
+exports.uploadImagensProduto = async (req, res) => {
 
     const produtoId = req.params.id;
     const lojaId = req.usuario.loja_id;
 
-    produtosModel.getById(produtoId, (err, produto) => {
+    produtosModel.getById(produtoId, async (err, produto) => {
 
-        if (err) return res.status(500).json({ erro: err });
+        if (err) {
+            console.error('Falha ao buscar produto para upload de imagens:', err.code || 'DATABASE_ERROR');
+            return res.status(500).json({ mensagem: 'Não foi possível validar o produto.' });
+        }
         if (!produto) {
             return res.status(404).json({ mensagem: 'Produto n�o encontrado.' });
         }
@@ -183,19 +200,24 @@ exports.uploadImagensProduto = (req, res) => {
             return res.status(400).json({ mensagem: 'Nenhuma imagem enviada.' });
         }
 
-        const imagens = req.files.map(file => ({
-            produto_id: produtoId,
-            caminho: `/uploads/${file.filename}`
-        }));
+        const uploads = await Promise.allSettled(req.files.map((file) => r2Storage.upload(file)));
+        const criados = uploads.filter((resultado) => resultado.status === 'fulfilled').map((resultado) => resultado.value);
+        const falhaUpload = uploads.find((resultado) => resultado.status === 'rejected');
+        if (falhaUpload) {
+            await removerObjetosR2(criados);
+            console.error('Falha no upload de imagem de produto:', falhaUpload.reason?.name || 'R2_UPLOAD_ERROR');
+            return res.status(500).json({ mensagem: 'Não foi possível enviar as imagens.' });
+        }
 
-        produtosModel.saveImagens(imagens, (err) => {
-            if (err) return res.status(500).json({ erro: err });
-
-            res.status(200).json({
-                mensagem: 'Imagens atualizadas com sucesso!',
-                imagens
-            });
-        });
+        const imagens = criados.map((objeto) => ({ produto_id: produtoId, caminho: objeto.url }));
+        try {
+            await saveImagens(imagens);
+        } catch (saveError) {
+            await removerObjetosR2(criados);
+            console.error('Falha ao salvar imagens do produto:', saveError?.code || 'DATABASE_ERROR');
+            return res.status(500).json({ mensagem: 'Não foi possível salvar as imagens.' });
+        }
+        return res.status(200).json({ mensagem: 'Imagens atualizadas com sucesso!', imagens });
     });
 };
 
@@ -355,19 +377,32 @@ exports.deletarImagemProduto = (req, res) => {
                                     }
 
                                     // Converte /uploads/arquivo.jpg em caminho f�sico do projeto
-                                    const caminhoRelativo = imagem.caminho.replace(/^\/+/, '');
-                                    const caminhoFisico = path.resolve(caminhoRelativo);
+                                    const storageTarget = r2Storage.getStorageTarget(imagem.caminho);
+                                    if (storageTarget?.type === 'r2') {
+                                        r2Storage.deleteByKey(storageTarget.key)
+                                            .then(() => res.status(200).json({ mensagem: 'Imagem removida com sucesso!' }))
+                                            .catch((storageError) => {
+                                                console.error('Falha ao remover imagem do R2:', storageError?.name || 'R2_DELETE_ERROR');
+                                                return res.status(500).json({ mensagem: 'Não foi possível remover o arquivo da imagem.' });
+                                            });
+                                        return;
+                                    }
+
+                                    if (storageTarget?.type !== 'local') {
+                                        return res.status(200).json({ mensagem: 'Imagem removida com sucesso!' });
+                                    }
+                                    const caminhoFisico = path.join(__dirname, '..', 'uploads', storageTarget.filename);
 
                                     // Remove o arquivo f�sico
                                     fs.unlink(caminhoFisico, (err) => {
 
-                                        if (err) {
+                                        if (err && err.code !== 'ENOENT') {
                                             // O registro j� foi exclu�do do banco.
                                             // N�o retornamos erro ao cliente para n�o informar
                                             // que a exclus�o falhou quando ela j� ocorreu no banco.
                                             console.error(
                                                 'Erro ao remover arquivo f�sico da imagem:',
-                                                err.message
+                                                err.code || 'LOCAL_FILE_ERROR'
                                             );
                                         }
 
